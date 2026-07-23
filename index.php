@@ -65,12 +65,12 @@ $servizi = [
     ],
 ];
 
-// Punti di forza (sezione Chi Siamo)
+// Punti di forza (sezione Chi Siamo) — ogni voce con icona dedicata su medaglione oro chiaro
 $punti_forza = [
-    'Preventivi gratuiti e senza impegno',
-    'Materiali certificati e di qualità',
-    'Puntualità e rispetto delle consegne',
-    'Cura artigianale di ogni dettaglio',
+    ['icona' => 'bi-cash-coin',        'testo' => 'Preventivi gratuiti e senza impegno'],
+    ['icona' => 'bi-patch-check-fill', 'testo' => 'Materiali certificati e di qualità'],
+    ['icona' => 'bi-clock-fill',       'testo' => 'Puntualità e rispetto delle consegne'],
+    ['icona' => 'bi-brush-fill',       'testo' => 'Cura artigianale di ogni dettaglio'],
 ];
 
 // Come lavoriamo (identico per tutti i servizi)
@@ -252,6 +252,14 @@ $foto_mosaico_url = array_map(function ($percorso) {
 
         .menu-servizi .dropdown-divider { border-color: #eee6d4; opacity: 1; }
 
+        /* Posizione fissa del sottomenu: stessa posizione su hover e click (evita il micro-spostamento verticale) */
+        .navbar .dropdown-menu.menu-servizi {
+            top: 100%;
+            left: 0;
+            right: auto;
+            margin-top: .6rem;
+        }
+
         /* Su desktop il sottomenu si apre anche al passaggio del mouse */
         @media (min-width: 992px) {
             .navbar .dropdown:hover > .dropdown-menu {
@@ -306,11 +314,15 @@ $foto_mosaico_url = array_map(function ($percorso) {
         /* ================= HERO ================= */
         .hero {
             min-height: 100vh;
+            min-height: 100svh;
             display: flex;
             align-items: center;
             position: relative;
             overflow: hidden;
             background: var(--scuro);
+            /* La navbar fissa copre ~85px in alto: il padding asimmetrico riporta
+               il contenuto al centro ottico dell'area visibile, senza vuoto in basso */
+            padding: 8.5rem 0 3rem;
         }
 
         /* Sfondo hero: video con fallback immagine (zoom lento se il video non parte) */
@@ -383,6 +395,20 @@ $foto_mosaico_url = array_map(function ($percorso) {
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+
+        /* Logo a sinistra del titolo, come il lockup della navbar */
+        .hero-brand {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .hero-logo {
+            width: clamp(88px, 9vw, 132px);
+            height: auto;
+            flex: none;
+            filter: drop-shadow(0 8px 26px rgba(0, 0, 0, .5));
         }
 
         .hero .lead { max-width: 560px; color: rgba(255, 255, 255, .88); }
@@ -638,7 +664,20 @@ $foto_mosaico_url = array_map(function ($percorso) {
             padding: .45rem 0;
         }
 
-        .lista-forza li i { color: var(--oro-scuro); font-size: 1.25rem; }
+        .forza-icona {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: #faf6ea;
+            border: 1px solid #e3d3a8;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 8px rgba(169, 130, 47, .12);
+        }
+
+        .forza-icona i { color: var(--oro-testo); font-size: 1.15rem; }
 
         /* ================= COME LAVORIAMO ================= */
         #come-lavoriamo { padding: 5.5rem 0; background: #faf7ef; position: relative; }
@@ -1185,6 +1224,8 @@ $foto_mosaico_url = array_map(function ($percorso) {
 
             .hero h1 { font-size: 2.35rem; }
             .hero .lead { font-size: 1.05rem; }
+            .hero-brand { gap: 1rem; }
+            .hero-logo { width: 72px; }
 
             /* CTA a tutta larghezza: più facili da premere */
             .hero .btn-oro,
@@ -1268,7 +1309,7 @@ $foto_mosaico_url = array_map(function ($percorso) {
                 <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item"><a class="nav-link active" href="#home">Home</a></li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#servizi" id="menuServizi" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle" href="#servizi" id="menuServizi" role="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
                             Servizi
                         </a>
                         <ul class="dropdown-menu menu-servizi" aria-labelledby="menuServizi">
@@ -1314,10 +1355,13 @@ $foto_mosaico_url = array_map(function ($percorso) {
                     <span class="hero-badge fade-up">
                         <i class="bi bi-award"></i> Di Ahmed Abdelaziz
                     </span>
-                    <h1 class="mt-4 fade-up delay-1">
-                        Specialisti in<br>
-                        <span class="gold">Finiture Edili</span>
-                    </h1>
+                    <div class="hero-brand mt-4 fade-up delay-1">
+                        <img class="hero-logo" src="assets/img/logo-mark-trasparente.png" alt="" width="460" height="413">
+                        <h1 class="mb-0">
+                            A.S.H.<br>
+                            <span class="gold">Finiture Contract</span>
+                        </h1>
+                    </div>
                     <p class="lead mt-4 fade-up delay-2">
                         <span class="tagline-hero"><?php echo $tagline; ?>.</span>
                         Cartongesso, sistemi a secco, rasatura armata,
@@ -1328,7 +1372,7 @@ $foto_mosaico_url = array_map(function ($percorso) {
                         <a href="#servizi" class="btn btn-oro">
                             <i class="bi bi-tools me-2"></i>I Nostri Servizi
                         </a>
-                        <a href="#contatti" class="btn btn-outline-scuro">
+                        <a href="contatti.php" class="btn btn-outline-scuro">
                             <i class="bi bi-chat-dots me-2"></i>Contattaci
                         </a>
                     </div>
@@ -1402,7 +1446,7 @@ $foto_mosaico_url = array_map(function ($percorso) {
                     </p>
                     <ul class="lista-forza mt-4">
                         <?php foreach ($punti_forza as $punto): ?>
-                        <li><i class="bi bi-check-circle-fill"></i> <?php echo $punto; ?></li>
+                        <li><span class="forza-icona"><i class="bi <?php echo $punto['icona']; ?>"></i></span> <?php echo $punto['testo']; ?></li>
                         <?php endforeach; ?>
                     </ul>
                 </div>

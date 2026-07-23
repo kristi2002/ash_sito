@@ -4,104 +4,8 @@
 //  Pagina Realizzazioni — PHP + Bootstrap 5
 // ============================================================
 
-$site_name  = 'A.S.H. Finiture Contract';
-$tagline    = 'Qualità e Precisione per Ogni Spazio';
-$phone1     = '329 6447797';
-$phone2     = '338 3386946';
-$phone1_raw = '+393296447797';
-$phone2_raw = '+393383386946';
-$email      = 'ashfiniturecontract@outlook.it';
-$address    = 'Via Adigrat 3/A, 62032 Camerino (MC)';
-
-// Tutti i servizi (per menu + filtri)
-$servizi = [
-    [
-        'slug'   => 'cartongesso',
-        'icona'  => 'bi-bricks',
-        'titolo' => 'Cartongesso',
-        'url'    => 'servizi/cartongesso.php',
-    ],
-    [
-        'slug'   => 'sistemi-a-secco',
-        'icona'  => 'bi-layers',
-        'titolo' => 'Sistemi a Secco',
-        'url'    => 'servizi/sistemi-a-secco.php',
-    ],
-    [
-        'slug'   => 'rasatura-armata',
-        'icona'  => 'bi-shield-check',
-        'titolo' => 'Rasatura Armata',
-        'url'    => 'servizi/rasatura-armata.php',
-    ],
-    [
-        'slug'   => 'tinteggiatura',
-        'icona'  => 'bi-paint-bucket',
-        'titolo' => 'Tinteggiatura',
-        'url'    => 'servizi/tinteggiatura.php',
-    ],
-    [
-        'slug'   => 'intonachino',
-        'icona'  => 'bi-brush',
-        'titolo' => 'Intonachino',
-        'url'    => 'servizi/intonachino.php',
-    ],
-    [
-        'slug'   => 'carta-da-parati',
-        'icona'  => 'bi-flower1',
-        'titolo' => 'Carta da Parati',
-        'url'    => 'servizi/carta-da-parati.php',
-    ],
-];
-
-// Indice rapido: slug => servizio (per badge e link delle card)
-$servizi_per_slug = array_column($servizi, null, 'slug');
-
-// Le realizzazioni in evidenza (stile blog): ogni card è legata a un servizio
-// tramite 'categoria' (slug del servizio) usata anche dai filtri.
-$realizzazioni = [
-    [
-        'categoria'  => 'cartongesso',
-        'titolo'     => 'Controsoffitto con luci LED integrate',
-        'sottotitolo'=> 'Ribassamento in cartongesso con gole luminose e faretti: la zona giorno cambia volto.',
-        'luogo'      => 'Appartamento privato — Camerino (MC)',
-        'foto'       => 'assets/img/servizi/cartongesso-stuccatura.jpg',
-    ],
-    [
-        'categoria'  => 'sistemi-a-secco',
-        'titolo'     => 'Pareti divisorie per nuovi uffici',
-        'sottotitolo'=> 'Riorganizzazione degli spazi con pareti a secco e isolamento acustico, senza opere murarie.',
-        'luogo'      => 'Uffici direzionali — Macerata',
-        'foto'       => 'assets/img/servizi/card-sistemi-a-secco.jpg',
-    ],
-    [
-        'categoria'  => 'rasatura-armata',
-        'titolo'     => 'Rasatura armata su cappotto termico',
-        'sottotitolo'=> 'Superficie rinforzata con rete e finitura uniforme: facciata protetta e pronta alla tinteggiatura.',
-        'luogo'      => 'Condominio — Tolentino (MC)',
-        'foto'       => 'assets/img/servizi/card-rasatura-armata.jpg',
-    ],
-    [
-        'categoria'  => 'tinteggiatura',
-        'titolo'     => 'Tinteggiatura completa di villa bifamiliare',
-        'sottotitolo'=> 'Ciclo completo interni ed esterni con prodotti certificati: colori uniformi e durevoli.',
-        'luogo'      => 'Abitazione privata — Camerino (MC)',
-        'foto'       => 'assets/img/servizi/tinteggiatura-ciclo.jpg',
-    ],
-    [
-        'categoria'  => 'intonachino',
-        'titolo'     => 'Intonachino decorativo per la zona giorno',
-        'sottotitolo'=> 'Finitura materica a effetto naturale: carattere ed eleganza per le pareti del soggiorno.',
-        'luogo'      => 'Appartamento — San Severino Marche (MC)',
-        'foto'       => 'assets/img/servizi/card-intonachino.jpg',
-    ],
-    [
-        'categoria'  => 'carta-da-parati',
-        'titolo'     => 'Carta da parati di design in camera',
-        'sottotitolo'=> 'Posa di precisione per una parete d\'accento: giunzioni invisibili e risultato scenografico.',
-        'luogo'      => 'Abitazione privata — Matelica (MC)',
-        'foto'       => 'assets/img/servizi/card-carta-da-parati.jpg',
-    ],
-];
+// Dati condivisi (azienda, servizi, realizzazioni) con la pagina di dettaglio
+require __DIR__ . '/includes/realizzazioni-data.php';
 
 // Dati strutturati JSON-LD: CollectionPage + BreadcrumbList
 $json_ld = [
@@ -117,6 +21,7 @@ $json_ld = [
                     '@type'    => 'ListItem',
                     'position' => $i + 1,
                     'name'     => $r['titolo'],
+                    'url'      => 'dettaglio-realizzazione.php?id=' . $r['id'],
                 ];
             }, $realizzazioni, array_keys($realizzazioni)),
         ],
@@ -289,6 +194,14 @@ $json_ld = [
         }
 
         .menu-servizi .dropdown-divider { border-color: #eee6d4; opacity: 1; }
+
+        /* Posizione fissa del sottomenu: stessa posizione su hover e click (evita il micro-spostamento verticale) */
+        .navbar .dropdown-menu.menu-servizi {
+            top: 100%;
+            left: 0;
+            right: auto;
+            margin-top: .6rem;
+        }
 
         /* Su desktop il sottomenu si apre anche al passaggio del mouse */
         @media (min-width: 992px) {
@@ -523,12 +436,6 @@ $json_ld = [
         }
 
         .filtri-servizi .chip.attivo i { color: var(--scuro); }
-
-        .conteggio-progetti {
-            font-size: .85rem;
-            font-weight: 600;
-            letter-spacing: .5px;
-        }
 
         /* Card progetto stile blog: foto sopra, testo sotto, badge + bottone in fondo */
         .card-progetto {
@@ -992,7 +899,7 @@ $json_ld = [
                 <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="index.php#servizi" id="menuServizi" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle" href="index.php#servizi" id="menuServizi" role="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
                             Servizi
                         </a>
                         <ul class="dropdown-menu menu-servizi" aria-labelledby="menuServizi">
@@ -1086,8 +993,6 @@ $json_ld = [
                 </button>
                 <?php endforeach; ?>
             </div>
-            <p class="text-center conteggio-progetti mb-4 reveal" id="conteggioProgetti" aria-live="polite"></p>
-
             <!-- Card progetti -->
             <div class="row g-4" id="grigliaProgetti">
                 <?php foreach ($realizzazioni as $i => $progetto):
@@ -1108,7 +1013,7 @@ $json_ld = [
                             <p class="sottotitolo"><?php echo $progetto['sottotitolo']; ?></p>
                             <div class="fondo">
                                 <span class="luogo"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> <?php echo $progetto['luogo']; ?></span>
-                                <a href="<?php echo $servizio['url']; ?>" class="link-progetto" aria-label="Scopri di più su <?php echo $progetto['titolo']; ?>">
+                                <a href="dettaglio-realizzazione.php?id=<?php echo $progetto['id']; ?>" class="link-progetto" aria-label="Scopri di più su <?php echo $progetto['titolo']; ?>">
                                     Scopri di più <i class="bi bi-arrow-right" aria-hidden="true"></i>
                                 </a>
                             </div>
@@ -1236,11 +1141,8 @@ $json_ld = [
         // ================= FILTRI PROGETTI =================
         const chips = document.querySelectorAll('.filtri-servizi .chip');
         const colonneProgetti = document.querySelectorAll('#grigliaProgetti .col-progetto');
-        const conteggio = document.getElementById('conteggioProgetti');
 
         function applicaFiltro(filtro) {
-            let visibili = 0;
-
             chips.forEach(chip => chip.classList.toggle('attivo', chip.dataset.filtro === filtro));
 
             colonneProgetti.forEach(colonna => {
@@ -1248,16 +1150,11 @@ $json_ld = [
                 colonna.classList.toggle('d-none', !mostra);
                 colonna.classList.toggle('riappari', mostra);
                 colonna.classList.remove('featured');
-                if (mostra) visibili++;
             });
 
             // Il primo risultato visibile diventa il progetto "in evidenza"
             const primaVisibile = Array.from(colonneProgetti).find(c => !c.classList.contains('d-none'));
             if (primaVisibile) primaVisibile.classList.add('featured');
-
-            conteggio.textContent = visibili === 1
-                ? '1 progetto trovato'
-                : visibili + ' progetti trovati';
 
             // Ricorda il filtro nell'indirizzo (condivisibile via link)
             const url = new URL(window.location);

@@ -448,6 +448,14 @@ $json_ld = [
 
         .menu-servizi .dropdown-divider { border-color: #eee6d4; opacity: 1; }
 
+        /* Posizione fissa del sottomenu: stessa posizione su hover e click (evita il micro-spostamento verticale) */
+        .navbar .dropdown-menu.menu-servizi {
+            top: 100%;
+            left: 0;
+            right: auto;
+            margin-top: .6rem;
+        }
+
         /* Su desktop il sottomenu si apre anche al passaggio del mouse */
         @media (min-width: 992px) {
             .navbar .dropdown:hover > .dropdown-menu {
@@ -1167,7 +1175,7 @@ $json_ld = [
                 <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="index.php#servizi" id="menuServizi" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle" href="index.php#servizi" id="menuServizi" role="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
                             Servizi
                         </a>
                         <ul class="dropdown-menu menu-servizi" aria-labelledby="menuServizi">

@@ -112,12 +112,12 @@ $livelli_finitura = [
 
 // Dove interveniamo: contesti tipici, raccontati come card premium
 $applicazioni = [
-    ['icona' => 'bi-house-door',       'titolo' => 'Abitazioni private',      'testo' => 'Divisione di ambienti, controsoffitti e pareti su misura per la casa.'],
-    ['icona' => 'bi-lightbulb',        'titolo' => 'Controsoffitti e luce',   'testo' => 'Velette, faretti e tagli di luce LED per ambienti dal design contemporaneo.'],
-    ['icona' => 'bi-thermometer-snow', 'titolo' => 'Comfort termo-acustico',  'testo' => 'Contropareti isolanti che migliorano il benessere termico e acustico.'],
-    ['icona' => 'bi-bookshelf',        'titolo' => 'Arredi in cartongesso',   'testo' => 'Librerie, nicchie e pareti attrezzate disegnate sullo spazio.'],
-    ['icona' => 'bi-briefcase',        'titolo' => 'Uffici e studi',          'testo' => 'Spazi di lavoro riorganizzati con divisioni funzionali ed eleganti.'],
-    ['icona' => 'bi-shop',             'titolo' => 'Attività commerciali',    'testo' => 'Ristrutturazioni e nuovi allestimenti per negozi e attività ricettive.'],
+    ['icona' => 'bi-house-door',       'titolo' => 'Abitazioni private',      'foto' => '../assets/img/servizi/cartongesso-abitazioni.jpg',    'testo' => 'Divisione di ambienti, controsoffitti e pareti su misura per la casa.'],
+    ['icona' => 'bi-lightbulb',        'titolo' => 'Controsoffitti e luce',   'foto' => '../assets/img/servizi/cartongesso-controsoffitti.jpg', 'testo' => 'Velette, faretti e tagli di luce LED per ambienti dal design contemporaneo.'],
+    ['icona' => 'bi-thermometer-snow', 'titolo' => 'Comfort termo-acustico',  'foto' => '../assets/img/servizi/cartongesso-contropareti.jpg',  'testo' => 'Contropareti isolanti che migliorano il benessere termico e acustico.'],
+    ['icona' => 'bi-bookshelf',        'titolo' => 'Arredi in cartongesso',   'foto' => '../assets/img/servizi/cartongesso-arredi.jpg',        'testo' => 'Librerie, nicchie e pareti attrezzate disegnate sullo spazio.'],
+    ['icona' => 'bi-briefcase',        'titolo' => 'Uffici e studi',          'foto' => '../assets/img/servizi/cartongesso-uffici.jpg',        'testo' => 'Spazi di lavoro riorganizzati con divisioni funzionali ed eleganti.'],
+    ['icona' => 'bi-shop',             'titolo' => 'Attività commerciali',    'foto' => '../assets/img/servizi/cartongesso-commerciali.jpg',   'testo' => 'Ristrutturazioni e nuovi allestimenti per negozi e attività ricettive.'],
 ];
 
 // FAQ
@@ -348,6 +348,14 @@ $json_ld = [
         }
 
         .menu-servizi .dropdown-divider { border-color: #eee6d4; opacity: 1; }
+
+        /* Posizione fissa del sottomenu: stessa posizione su hover e click (evita il micro-spostamento verticale) */
+        .navbar .dropdown-menu.menu-servizi {
+            top: 100%;
+            left: 0;
+            right: auto;
+            margin-top: .6rem;
+        }
 
         /* Su desktop il sottomenu si apre anche al passaggio del mouse */
         @media (min-width: 992px) {
@@ -937,7 +945,7 @@ $json_ld = [
             background: linear-gradient(160deg, #fffefb 0%, #fdf8ec 100%);
             border: 1px solid #e6d5a8;
             border-radius: 18px;
-            padding: 1.9rem 1.6rem 1.7rem;
+            padding: 0;
             overflow: hidden;
             box-shadow: 0 12px 30px rgba(169, 130, 47, .10);
             transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
@@ -951,6 +959,7 @@ $json_ld = [
             left: 0;
             right: 0;
             height: 4px;
+            z-index: 2;
             background: linear-gradient(90deg, var(--oro-scuro), var(--oro) 45%, #e8cc82 70%, var(--oro-scuro));
         }
 
@@ -960,10 +969,35 @@ $json_ld = [
             box-shadow: 0 20px 44px rgba(169, 130, 47, .22);
         }
 
+        /* Foto della tipologia di spazio, in testa alla card */
+        .card-applicazione .foto-applicazione {
+            aspect-ratio: 16 / 10;
+            overflow: hidden;
+        }
+
+        .card-applicazione .foto-applicazione img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .5s ease;
+        }
+
+        .card-applicazione:hover .foto-applicazione img { transform: scale(1.06); }
+
+        .card-applicazione .corpo-applicazione {
+            position: relative;
+            padding: 0 1.6rem 1.7rem;
+        }
+
         .card-applicazione .icona-applicazione {
             width: 54px;
             height: 54px;
+            margin-top: -27px; /* a cavallo tra foto e testo */
             margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+            border: 3px solid #fffefb;
             border-radius: 14px;
             display: inline-flex;
             align-items: center;
@@ -1296,7 +1330,7 @@ $json_ld = [
                 <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item"><a class="nav-link" href="../index.php">Home</a></li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle active" href="../index.php#servizi" id="menuServizi" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle active" href="../index.php#servizi" id="menuServizi" role="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
                             Servizi
                         </a>
                         <ul class="dropdown-menu menu-servizi" aria-labelledby="menuServizi">
@@ -1516,9 +1550,16 @@ $json_ld = [
                 <?php foreach ($applicazioni as $i => $applicazione): ?>
                 <div class="col-md-6 col-lg-4 reveal" style="transition-delay: <?php echo ($i % 3) * 0.12; ?>s">
                     <div class="card-applicazione">
-                        <span class="icona-applicazione"><i class="bi <?php echo $applicazione['icona']; ?>" aria-hidden="true"></i></span>
-                        <h5><?php echo $applicazione['titolo']; ?></h5>
-                        <p><?php echo $applicazione['testo']; ?></p>
+                        <div class="foto-applicazione">
+                            <img src="<?php echo $applicazione['foto']; ?>"
+                                 alt="<?php echo $applicazione['titolo']; ?> — cartongesso A.S.H. Finiture Contract"
+                                 loading="lazy">
+                        </div>
+                        <div class="corpo-applicazione">
+                            <span class="icona-applicazione"><i class="bi <?php echo $applicazione['icona']; ?>" aria-hidden="true"></i></span>
+                            <h5><?php echo $applicazione['titolo']; ?></h5>
+                            <p><?php echo $applicazione['testo']; ?></p>
+                        </div>
                     </div>
                 </div>
                 <?php endforeach; ?>
