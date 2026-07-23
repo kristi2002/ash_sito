@@ -19,24 +19,44 @@
 //          // errore: $result['error']
 //      }
 //
-//  Se installi PHPMailer (consigliato) il modulo lo usa
-//  automaticamente via SMTP:
-//      composer require phpmailer/phpmailer
-//  e compila le costanti MAIL_SMTP_* qui sotto.
-//  Senza PHPMailer usa la funzione mail() di PHP.
+//  Con PHPMailer installato il modulo invia via SMTP usando le
+//  variabili d'ambiente MAIL_* (vedi .env.example). Senza
+//  PHPMailer usa la funzione mail() di PHP come fallback.
 // ============================================================
 
 // ---- Configurazione ----------------------------------------
-const MAIL_FROM_EMAIL = 'ashfiniturecontract@outlook.it';
-const MAIL_FROM_NAME  = 'A.S.H. Finiture Contract';
-
-// SMTP (usato solo se PHPMailer è installato)
-const MAIL_SMTP_HOST     = 'smtp.office365.com';
-const MAIL_SMTP_PORT     = 587;
-const MAIL_SMTP_USER     = 'ashfiniturecontract@outlook.it';
-const MAIL_SMTP_PASSWORD = '';   // <-- inserisci la password / app password
-const MAIL_SMTP_SECURE   = 'tls'; // 'tls' (porta 587) o 'ssl' (porta 465)
+// I valori arrivano dalle variabili d'ambiente (in produzione le
+// imposti su Coolify -> Environment Variables; in locale nel file
+// .env, vedi .env.example). Il secondo argomento è il default.
 // ------------------------------------------------------------
+
+// Carica il file .env (solo sviluppo locale — in produzione le
+// variabili sono già nell'ambiente e il file non esiste).
+(function () {
+    $envFile = dirname(__DIR__) . '/.env';
+    if (!is_file($envFile)) {
+        return;
+    }
+    foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        $line = trim($line);
+        if ($line === '' || $line[0] === '#' || strpos($line, '=') === false) {
+            continue;
+        }
+        [$key, $value] = explode('=', $line, 2);
+        $key   = trim($key);
+        $value = trim(trim($value), "\"'");
+        if (getenv($key) === false) {
+            putenv("$key=$value");
+        }
+    }
+})();
+
+/** Legge una variabile d'ambiente con valore di default. */
+function mail_config(string $key, string $default = ''): string
+{
+    $value = getenv($key);
+    return ($value === false || $value === '') ? $default : $value;
+}
 
 /**
  * Invia una email.
@@ -81,15 +101,18 @@ function send_email_phpmailer(array $to, array $cc, string $oggetto, string $tes
     $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
     try {
         $mail->isSMTP();
-        $mail->Host       = MAIL_SMTP_HOST;
-        $mail->Port       = MAIL_SMTP_PORT;
+        $mail->Host       = mail_config('MAIL_SMTP_HOST', 'smtp.office365.com');
+        $mail->Port       = (int) mail_config('MAIL_SMTP_PORT', '587');
         $mail->SMTPAuth   = true;
-        $mail->Username   = MAIL_SMTP_USER;
-        $mail->Password   = MAIL_SMTP_PASSWORD;
-        $mail->SMTPSecure = MAIL_SMTP_SECURE;
+        $mail->Username   = mail_config('MAIL_SMTP_USER', 'ashfiniturecontract@outlook.it');
+        $mail->Password   = mail_config('MAIL_SMTP_PASSWORD');
+        $mail->SMTPSecure = mail_config('MAIL_SMTP_SECURE', 'tls');
         $mail->CharSet    = 'UTF-8';
 
-        $mail->setFrom(MAIL_FROM_EMAIL, MAIL_FROM_NAME);
+        $mail->setFrom(
+            mail_config('MAIL_FROM_EMAIL', 'ashfiniturecontract@outlook.it'),
+            mail_config('MAIL_FROM_NAME', 'A.S.H. Finiture Contract')
+        );
         foreach ($to as $addr) {
             $mail->addAddress($addr);
         }
@@ -114,9 +137,12 @@ function send_email_phpmailer(array $to, array $cc, string $oggetto, string $tes
 /** Invio via mail() nativa di PHP (fallback). */
 function send_email_native(array $to, array $cc, string $oggetto, string $testo, bool $isHtml): array
 {
+    $fromEmail = mail_config('MAIL_FROM_EMAIL', 'ashfiniturecontract@outlook.it');
+    $fromName  = mail_config('MAIL_FROM_NAME', 'A.S.H. Finiture Contract');
+
     $headers   = [];
-    $headers[] = 'From: ' . mb_encode_mimeheader(MAIL_FROM_NAME, 'UTF-8') . ' <' . MAIL_FROM_EMAIL . '>';
-    $headers[] = 'Reply-To: ' . MAIL_FROM_EMAIL;
+    $headers[] = 'From: ' . mb_encode_mimeheader($fromName, 'UTF-8') . ' <' . $fromEmail . '>';
+    $headers[] = 'Reply-To: ' . $fromEmail;
     if (!empty($cc)) {
         $headers[] = 'Cc: ' . implode(', ', $cc);
     }
