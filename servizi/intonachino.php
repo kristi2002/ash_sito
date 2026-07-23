@@ -87,7 +87,7 @@ $foto_cantiere_url = array_map(function ($percorso) {
 
 // Lavorazioni principali (chip nella sezione "Cosa facciamo")
 $lavorazioni = [
-    ['icona' => 'bi-house',        'testo' => 'Intonachino per interni'],
+    
     ['icona' => 'bi-building',     'testo' => 'Facciate esterne'],
     ['icona' => 'bi-brush',        'testo' => 'Effetto spatolato'],
     ['icona' => 'bi-sliders',      'testo' => 'Grane fini e medie'],
