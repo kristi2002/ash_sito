@@ -103,33 +103,6 @@ $realizzazioni = [
     ],
 ];
 
-// Foto e video per il mosaico: letti dalla cartella "photo colage".
-// Basta aggiungere o togliere file dalla cartella per aggiornare il mosaico.
-$media_mosaico = [];
-foreach (['mp4', 'webm', 'mov'] as $estensione) {
-    foreach (glob('photo colage/*.' . $estensione) ?: [] as $percorso) {
-        $media_mosaico[] = ['percorso' => $percorso, 'tipo' => 'video'];
-    }
-}
-$foto_trovate = [];
-foreach (['jpg', 'jpeg', 'png', 'webp'] as $estensione) {
-    $trovate = glob('photo colage/*.' . $estensione);
-    if ($trovate) {
-        $foto_trovate = array_merge($foto_trovate, $trovate);
-    }
-}
-$foto_trovate = array_values(array_unique($foto_trovate));
-sort($foto_trovate);
-foreach ($foto_trovate as $percorso) {
-    $media_mosaico[] = ['percorso' => $percorso, 'tipo' => 'foto'];
-}
-
-// Percorsi pronti per l'HTML (gli spazi nei nomi file vanno codificati)
-$media_mosaico = array_map(function ($media) {
-    $media['src'] = implode('/', array_map('rawurlencode', explode('/', $media['percorso'])));
-    return $media;
-}, $media_mosaico);
-
 // Dati strutturati JSON-LD: CollectionPage + BreadcrumbList
 $json_ld = [
     [
@@ -164,7 +137,7 @@ $json_ld = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Realizzazioni | A.S.H. Finiture Contract — Camerino (MC)</title>
-    <meta name="description" content="Guarda le realizzazioni di A.S.H. Finiture Contract: foto e video dei lavori di cartongesso, sistemi a secco, rasatura armata, tinteggiatura, intonachino e carta da parati a Camerino (MC) e provincia.">
+    <meta name="description" content="Scopri le realizzazioni di A.S.H. Finiture Contract: i progetti di cartongesso, sistemi a secco, rasatura armata, tinteggiatura, intonachino e carta da parati a Camerino (MC) e provincia.">
 
     <!-- Bootstrap 5 + Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -492,208 +465,8 @@ $json_ld = [
 
         .reveal.visible { opacity: 1; transform: translateY(0); }
 
-        /* ================= MOSAICO FOTO E VIDEO ================= */
-        #mosaico-lavori {
-            padding: 5.5rem 0;
-            background: linear-gradient(180deg, #fdfbf5 0%, #faf7ef 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Anello decorativo oro, come nella homepage */
-        #mosaico-lavori::after {
-            content: "";
-            position: absolute;
-            width: 360px;
-            height: 360px;
-            border: 38px solid rgba(201, 162, 75, .10);
-            border-radius: 50%;
-            bottom: -150px;
-            left: -130px;
-        }
-
-        #mosaico-lavori .container { position: relative; z-index: 1; }
-
-        .mosaico {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-auto-rows: clamp(130px, 18vw, 200px);
-            grid-auto-flow: dense;
-            gap: 14px;
-        }
-
-        .mosaico-item {
-            position: relative;
-            overflow: hidden;
-            border-radius: 18px;
-            border: 2px solid #ecdfc0;
-            background: var(--oro-chiaro);
-            cursor: pointer;
-            margin: 0; /* azzera il margine di <figure> */
-            transition: border-color .3s ease, box-shadow .3s ease, transform .3s ease;
-        }
-
-        .mosaico-item:hover {
-            border-color: var(--oro);
-            box-shadow: 0 14px 32px rgba(169, 130, 47, .28);
-            transform: translateY(-4px);
-        }
-
-        .mosaico-item--grande { grid-column: span 2; grid-row: span 2; }
-        .mosaico-item--alto   { grid-row: span 2; }
-        .mosaico-item--largo  { grid-column: span 2; }
-
-        .mosaico-item img,
-        .mosaico-item video {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Zoom lento continuo (ken burns) solo sulle foto */
-        .mosaico-item img {
-            animation: kenburns-mosaico 16s ease-in-out infinite alternate;
-            will-change: transform;
-        }
-
-        .mosaico-item:nth-child(2n) img { animation-duration: 20s; animation-direction: alternate-reverse; }
-        .mosaico-item:nth-child(3n) img { animation-delay: -7s; }
-
-        @keyframes kenburns-mosaico {
-            from { transform: scale(1.02); }
-            to   { transform: scale(1.14) translate(1.5%, -1%); }
-        }
-
-        /* Etichetta VIDEO sulle tessere con filmati */
-        .mosaico-item .badge-video {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            z-index: 2;
-            display: inline-flex;
-            align-items: center;
-            gap: .35rem;
-            padding: .3rem .75rem;
-            border-radius: 50rem;
-            background: rgba(24, 30, 34, .72);
-            color: #ecd9a8;
-            font-size: .68rem;
-            font-weight: 700;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-            backdrop-filter: blur(4px);
-            pointer-events: none;
-        }
-
-        /* Velo scuro + lente d'ingrandimento al passaggio del mouse */
-        .mosaico-item::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(24, 30, 34, 0) 50%, rgba(24, 30, 34, .38) 100%);
-            opacity: 0;
-            transition: opacity .35s ease;
-            pointer-events: none;
-        }
-
-        .mosaico-item:hover::after { opacity: 1; }
-
-        .mosaico-item .lente {
-            position: absolute;
-            right: 12px;
-            bottom: 12px;
-            z-index: 2;
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, .92);
-            color: var(--oro-testo);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.05rem;
-            opacity: 0;
-            transform: translateY(6px);
-            transition: opacity .3s ease, transform .3s ease;
-            pointer-events: none;
-        }
-
-        .mosaico-item:hover .lente { opacity: 1; transform: translateY(0); }
-
-        @media (max-width: 767.98px) {
-            .mosaico {
-                grid-template-columns: repeat(2, 1fr);
-                grid-auto-rows: clamp(110px, 26vw, 160px);
-                gap: 10px;
-            }
-        }
-
         @media (prefers-reduced-motion: reduce) {
-            .mosaico-item img { animation: none; }
             .hero-servizio .hero-bg { animation: none; }
-        }
-
-        /* Lightbox: foto e video a schermo intero con frecce e contatore */
-        .lightbox {
-            position: fixed;
-            inset: 0;
-            z-index: 2000;
-            background: rgba(18, 22, 25, .94);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity .3s ease;
-        }
-
-        .lightbox.aperta { opacity: 1; pointer-events: auto; }
-
-        .lightbox img,
-        .lightbox video {
-            max-width: min(92vw, 1100px);
-            max-height: 82vh;
-            border-radius: 12px;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, .5);
-        }
-
-        .lightbox button {
-            position: absolute;
-            border: none;
-            border-radius: 50%;
-            width: 46px;
-            height: 46px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            background: rgba(255, 255, 255, .12);
-            color: #fff;
-            transition: background .25s ease, transform .25s ease;
-        }
-
-        .lightbox button:hover { background: var(--oro-scuro); transform: scale(1.08); }
-
-        .lightbox .chiudi { top: 20px; right: 20px; }
-
-        .lightbox .precedente { left: 16px; top: 50%; transform: translateY(-50%); }
-
-        .lightbox .successiva { right: 16px; top: 50%; transform: translateY(-50%); }
-
-        .lightbox .precedente:hover,
-        .lightbox .successiva:hover { transform: translateY(-50%) scale(1.08); }
-
-        .lightbox .contatore {
-            position: absolute;
-            bottom: 22px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #ecd9a8;
-            font-weight: 600;
-            font-size: .9rem;
-            letter-spacing: 1.5px;
         }
 
         /* ================= PROGETTI (STILE BLOG) ================= */
@@ -836,8 +609,26 @@ $json_ld = [
             font-weight: 600;
             color: var(--oro-testo);
             letter-spacing: .4px;
-            margin-bottom: .55rem;
         }
+
+        /* Etichetta "In evidenza": visibile solo sul progetto in primo piano */
+        .tag-evidenza {
+            display: none;
+            align-items: center;
+            gap: .45rem;
+            align-self: flex-start;
+            padding: .35rem .95rem;
+            margin-bottom: .85rem;
+            border-radius: 50rem;
+            background: linear-gradient(135deg, #d9b866, var(--oro));
+            color: var(--scuro);
+            font-size: .66rem;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+        }
+
+        .col-progetto.featured .tag-evidenza { display: inline-flex; }
 
         .card-progetto h3 {
             font-size: 1.08rem;
@@ -880,6 +671,53 @@ $json_ld = [
         }
 
         .badge-categoria i { font-size: .85rem; }
+
+        /* Nelle card la categoria vive sopra la foto, sempre leggibile */
+        .card-progetto .badge-categoria {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            z-index: 2;
+            background: rgba(255, 255, 255, .94);
+            border-color: rgba(255, 255, 255, .55);
+            box-shadow: 0 4px 12px rgba(24, 30, 34, .16);
+        }
+
+        .card-progetto .fondo .link-progetto { margin-left: auto; }
+
+        /* Progetto in evidenza: il primo risultato occupa tutta la riga */
+        .col-progetto.featured {
+            flex: 0 0 auto;
+            width: 100%;
+        }
+
+        @media (min-width: 992px) {
+            .col-progetto.featured .card-progetto {
+                display: grid;
+                grid-template-columns: 1.25fr 1fr;
+            }
+
+            .col-progetto.featured .foto {
+                aspect-ratio: auto;
+                height: 100%;
+                min-height: 400px;
+            }
+
+            .col-progetto.featured .corpo {
+                padding: 2.5rem 2.6rem 2.1rem;
+                justify-content: center;
+            }
+
+            .col-progetto.featured h3 {
+                font-size: 1.55rem;
+                margin-bottom: .8rem;
+            }
+
+            .col-progetto.featured .sottotitolo {
+                font-size: .98rem;
+                margin-bottom: 1.6rem;
+            }
+        }
 
         /* Bottone "Scopri di più": pill oro, si inverte al hover (come homepage) */
         .link-progetto {
@@ -1103,7 +941,6 @@ $json_ld = [
         /* ================= MOBILE: TELEFONI ================= */
         @media (max-width: 575.98px) {
             /* Ritmo verticale più compatto: meno vuoto tra le sezioni */
-            #mosaico-lavori { padding: 3.8rem 0 3.4rem; }
             #progetti { padding: 3.8rem 0 4.2rem; }
             #cta-finale { padding: 3.4rem 0; }
 
@@ -1133,36 +970,6 @@ $json_ld = [
                 right: max(21px, env(safe-area-inset-right));
                 bottom: 88px;
             }
-
-            /* Lightbox: chiudi in alto, frecce in basso al centro (zona pollice) */
-            .lightbox img,
-            .lightbox video { max-width: 96vw; max-height: 72vh; }
-
-            .lightbox .chiudi { top: max(14px, env(safe-area-inset-top)); right: 14px; }
-
-            .lightbox .contatore {
-                top: max(26px, env(safe-area-inset-top));
-                bottom: auto;
-                left: 20px;
-                transform: none;
-            }
-
-            .lightbox .precedente,
-            .lightbox .successiva {
-                top: auto;
-                bottom: max(20px, env(safe-area-inset-bottom));
-                transform: none;
-                width: 54px;
-                height: 54px;
-                background: rgba(255, 255, 255, .16);
-            }
-
-            .lightbox .precedente { left: calc(50% - 66px); }
-
-            .lightbox .successiva { right: calc(50% - 66px); }
-
-            .lightbox .precedente:hover,
-            .lightbox .successiva:hover { transform: scale(1.06); }
         }
     </style>
 </head>
@@ -1238,9 +1045,9 @@ $json_ld = [
                         Le Nostre <span class="gold">Realizzazioni</span>
                     </h1>
                     <p class="lead mt-3 fade-up delay-2">
-                        Foto e video dai cantieri completati: cartongesso, sistemi a secco,
-                        rasatura armata, tinteggiatura, intonachino e carta da parati.
-                        Ogni progetto racconta la nostra idea di qualità.
+                        I cantieri completati raccontati progetto per progetto: cartongesso,
+                        sistemi a secco, rasatura armata, tinteggiatura, intonachino
+                        e carta da parati. Ogni lavoro racconta la nostra idea di qualità.
                     </p>
                     <div class="d-flex flex-wrap gap-3 mt-4 fade-up delay-3">
                         <a href="#progetti" class="btn btn-oro">
@@ -1255,53 +1062,16 @@ $json_ld = [
         </div>
     </header>
 
-    <!-- ================= MOSAICO FOTO E VIDEO ================= -->
-    <section id="mosaico-lavori">
-        <div class="container">
-            <div class="text-center mb-5 reveal">
-                <span class="hero-badge"><i class="bi bi-camera"></i> Dai nostri cantieri</span>
-                <h2 class="section-title mt-3">Foto e Video dei Lavori</h2>
-                <div class="title-underline"></div>
-                <p class="mt-3 mx-auto" style="max-width: 640px;">
-                    Uno sguardo d'insieme sui nostri cantieri: clicca su una foto o su un video
-                    per aprire la galleria a schermo intero.
-                </p>
-            </div>
-            <?php if (!empty($media_mosaico)): ?>
-            <div class="mosaico reveal" id="mosaicoRealizzazioni">
-                <?php foreach (array_slice($media_mosaico, 0, 11) as $i => $media):
-                    $classe = '';
-                    if ($i === 0) { $classe = ' mosaico-item--grande'; }
-                    elseif ($i === 3) { $classe = ' mosaico-item--alto'; }
-                    elseif ($i === 6) { $classe = ' mosaico-item--largo'; }
-                ?>
-                <figure class="mosaico-item<?php echo $classe; ?>" data-media="<?php echo $i; ?>">
-                    <?php if ($media['tipo'] === 'video'): ?>
-                    <video src="<?php echo $media['src']; ?>" muted loop autoplay playsinline preload="metadata" aria-label="Video di un lavoro realizzato da <?php echo $site_name; ?>"></video>
-                    <span class="badge-video"><i class="bi bi-play-fill"></i> Video</span>
-                    <?php else: ?>
-                    <img src="<?php echo $media['src']; ?>" alt="Lavoro realizzato da <?php echo $site_name; ?>" loading="lazy">
-                    <?php endif; ?>
-                    <span class="lente"><i class="bi bi-arrows-fullscreen"></i></span>
-                </figure>
-                <?php endforeach; ?>
-            </div>
-            <?php else: ?>
-            <p class="text-center text-muted reveal">Le foto e i video dei nostri lavori saranno disponibili a breve.</p>
-            <?php endif; ?>
-        </div>
-    </section>
-
     <!-- ================= PROGETTI IN EVIDENZA (STILE BLOG) ================= -->
     <section id="progetti">
         <div class="container">
             <div class="text-center mb-4 reveal">
-                <span class="hero-badge"><i class="bi bi-journal-richtext"></i> Progetti in evidenza</span>
+                <span class="hero-badge"><i class="bi bi-journal-richtext"></i> Diario dei cantieri</span>
                 <h2 class="section-title mt-3">Gli Ultimi <span class="text-oro">Progetti</span></h2>
                 <div class="title-underline"></div>
                 <p class="mt-3 mx-auto" style="max-width: 640px;">
-                    Una selezione dei lavori più recenti. Usa i filtri per trovare
-                    le realizzazioni del servizio che ti interessa.
+                    Una selezione dei lavori più recenti, raccontati uno per uno.
+                    Filtra per servizio per vedere solo ciò che ti interessa.
                 </p>
             </div>
 
@@ -1327,16 +1097,17 @@ $json_ld = [
                     <article class="card-progetto">
                         <div class="foto">
                             <img src="<?php echo $progetto['foto']; ?>" alt="<?php echo $progetto['titolo']; ?> — realizzazione di <?php echo $site_name; ?>" loading="lazy">
+                            <span class="badge-categoria">
+                                <i class="bi <?php echo $servizio['icona']; ?>" aria-hidden="true"></i>
+                                <?php echo $servizio['titolo']; ?>
+                            </span>
                         </div>
                         <div class="corpo">
-                            <span class="luogo"><i class="bi bi-geo-alt-fill"></i> <?php echo $progetto['luogo']; ?></span>
+                            <span class="tag-evidenza"><i class="bi bi-star-fill" aria-hidden="true"></i> In evidenza</span>
                             <h3><?php echo $progetto['titolo']; ?></h3>
                             <p class="sottotitolo"><?php echo $progetto['sottotitolo']; ?></p>
                             <div class="fondo">
-                                <span class="badge-categoria">
-                                    <i class="bi <?php echo $servizio['icona']; ?>" aria-hidden="true"></i>
-                                    <?php echo $servizio['titolo']; ?>
-                                </span>
+                                <span class="luogo"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> <?php echo $progetto['luogo']; ?></span>
                                 <a href="<?php echo $servizio['url']; ?>" class="link-progetto" aria-label="Scopri di più su <?php echo $progetto['titolo']; ?>">
                                     Scopri di più <i class="bi bi-arrow-right" aria-hidden="true"></i>
                                 </a>
@@ -1360,13 +1131,15 @@ $json_ld = [
                         e senza impegno, ti rispondiamo in tempi rapidi.
                     </p>
                 </div>
-                <div class="col-lg-4 text-lg-end reveal" style="transition-delay:.15s">
-                    <a href="tel:<?php echo $phone1_raw; ?>" class="btn btn-bianco mb-3 mb-lg-0 me-lg-2">
-                        <i class="bi bi-telephone-outbound me-2"></i>Chiama Ora
-                    </a>
-                    <a href="preventivo.php" class="btn btn-bianco">
-                        <i class="bi bi-envelope-paper me-2"></i>Richiedi Preventivo
-                    </a>
+                <div class="col-lg-4 reveal" style="transition-delay:.15s">
+                    <div class="d-flex flex-wrap gap-3 justify-content-lg-end">
+                        <a href="tel:<?php echo $phone1_raw; ?>" class="btn btn-bianco">
+                            <i class="bi bi-telephone-outbound me-2"></i>Chiama Ora
+                        </a>
+                        <a href="preventivo.php" class="btn btn-bianco">
+                            <i class="bi bi-envelope-paper me-2"></i>Richiedi Preventivo
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1419,17 +1192,6 @@ $json_ld = [
         <i class="bi bi-whatsapp"></i>
     </a>
     <button type="button" class="btn-top" id="btnTop" aria-label="Torna su"><i class="bi bi-arrow-up"></i></button>
-
-    <!-- Lightbox galleria foto e video -->
-    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Galleria foto e video dei lavori">
-        <button type="button" class="chiudi" aria-label="Chiudi la galleria"><i class="bi bi-x-lg"></i></button>
-        <button type="button" class="precedente" aria-label="Contenuto precedente"><i class="bi bi-chevron-left"></i></button>
-        <img src="" alt="Foto del lavoro ingrandita" id="lightboxImg">
-        <video id="lightboxVideo" controls playsinline class="d-none" aria-label="Video del lavoro"></video>
-        <button type="button" class="successiva" aria-label="Contenuto successivo"><i class="bi bi-chevron-right"></i></button>
-        <div class="contatore" id="lightboxContatore"></div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Navbar: ombra + riduzione allo scroll
@@ -1485,8 +1247,13 @@ $json_ld = [
                 const mostra = filtro === 'tutti' || colonna.dataset.categoria === filtro;
                 colonna.classList.toggle('d-none', !mostra);
                 colonna.classList.toggle('riappari', mostra);
+                colonna.classList.remove('featured');
                 if (mostra) visibili++;
             });
+
+            // Il primo risultato visibile diventa il progetto "in evidenza"
+            const primaVisibile = Array.from(colonneProgetti).find(c => !c.classList.contains('d-none'));
+            if (primaVisibile) primaVisibile.classList.add('featured');
 
             conteggio.textContent = visibili === 1
                 ? '1 progetto trovato'
@@ -1511,83 +1278,6 @@ $json_ld = [
         const filtriValidi = Array.from(chips).map(chip => chip.dataset.filtro);
         applicaFiltro(filtriValidi.includes(filtroIniziale) ? filtroIniziale : 'tutti');
 
-        // ================= MOSAICO + LIGHTBOX FOTO E VIDEO =================
-        // Tutti i contenuti della cartella "photo colage" (percorsi già codificati dal PHP)
-        const mediaMosaico = <?php echo json_encode(array_map(function ($m) {
-            return ['src' => $m['src'], 'tipo' => $m['tipo']];
-        }, $media_mosaico), JSON_UNESCAPED_SLASHES); ?>;
-        const mosaico = document.getElementById('mosaicoRealizzazioni');
-
-        if (mosaico && mediaMosaico.length) {
-            const lightbox = document.getElementById('lightbox');
-            const lightboxImg = document.getElementById('lightboxImg');
-            const lightboxVideo = document.getElementById('lightboxVideo');
-            const lightboxContatore = document.getElementById('lightboxContatore');
-            let indiceLightbox = 0;
-
-            function mostraMedia(i) {
-                indiceLightbox = (i + mediaMosaico.length) % mediaMosaico.length;
-                const media = mediaMosaico[indiceLightbox];
-
-                // Ferma sempre l'eventuale video in riproduzione
-                lightboxVideo.pause();
-
-                if (media.tipo === 'video') {
-                    lightboxVideo.src = media.src;
-                    lightboxVideo.classList.remove('d-none');
-                    lightboxImg.classList.add('d-none');
-                    lightboxVideo.play().catch(() => {});
-                } else {
-                    lightboxImg.src = media.src;
-                    lightboxImg.classList.remove('d-none');
-                    lightboxVideo.classList.add('d-none');
-                    lightboxVideo.removeAttribute('src');
-                }
-
-                lightboxContatore.textContent = (indiceLightbox + 1) + ' / ' + mediaMosaico.length;
-            }
-
-            function apriLightbox(i) {
-                mostraMedia(i);
-                lightbox.classList.add('aperta');
-                document.body.style.overflow = 'hidden';
-            }
-
-            function chiudiLightbox() {
-                lightbox.classList.remove('aperta');
-                lightboxVideo.pause();
-                document.body.style.overflow = '';
-            }
-
-            mosaico.querySelectorAll('.mosaico-item').forEach(tessera => {
-                tessera.addEventListener('click', () => apriLightbox(parseInt(tessera.dataset.media, 10)));
-            });
-
-            lightbox.querySelector('.chiudi').addEventListener('click', chiudiLightbox);
-            lightbox.querySelector('.precedente').addEventListener('click', () => mostraMedia(indiceLightbox - 1));
-            lightbox.querySelector('.successiva').addEventListener('click', () => mostraMedia(indiceLightbox + 1));
-            lightbox.addEventListener('click', (e) => { if (e.target === lightbox) chiudiLightbox(); });
-
-            // Swipe sinistra/destra per cambiare foto (telefoni); sui video
-            // il gesto resta libero per i controlli di riproduzione
-            let toccoX = null;
-            lightbox.addEventListener('touchstart', (e) => {
-                toccoX = e.target === lightboxVideo ? null : e.changedTouches[0].clientX;
-            }, { passive: true });
-            lightbox.addEventListener('touchend', (e) => {
-                if (toccoX === null) return;
-                const delta = e.changedTouches[0].clientX - toccoX;
-                toccoX = null;
-                if (Math.abs(delta) > 45) mostraMedia(indiceLightbox + (delta < 0 ? 1 : -1));
-            }, { passive: true });
-
-            document.addEventListener('keydown', (e) => {
-                if (!lightbox.classList.contains('aperta')) return;
-                if (e.key === 'Escape') chiudiLightbox();
-                if (e.key === 'ArrowLeft') mostraMedia(indiceLightbox - 1);
-                if (e.key === 'ArrowRight') mostraMedia(indiceLightbox + 1);
-            });
-        }
     </script>
 </body>
 </html>

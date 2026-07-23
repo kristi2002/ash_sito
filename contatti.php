@@ -64,6 +64,112 @@ function link_servizio($servizio) {
     return $servizio['url'] !== null ? $servizio['url'] : 'index.php#servizio-' . $servizio['slug'];
 }
 
+// ============================================================
+//  GESTIONE INVIO MODULO CONTATTI
+// ============================================================
+$invio_ok         = false;
+$conferma_inviata = false;
+$errori           = [];
+$dati = [
+    'nome'      => '',
+    'email'     => '',
+    'telefono'  => '',
+    'messaggio' => '',
+];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Honeypot anti-spam: campo invisibile che gli umani lasciano vuoto
+    if (trim($_POST['azienda'] ?? '') !== '') {
+        // Bot: fingiamo che sia andata a buon fine, senza inviare nulla
+        $invio_ok = true;
+    } else {
+        foreach ($dati as $campo => $ignora) {
+            $dati[$campo] = trim($_POST[$campo] ?? '');
+        }
+
+        // Validazione
+        if ($dati['nome'] === '') {
+            $errori[] = 'Inserisci il tuo nome.';
+        }
+        if ($dati['email'] === '') {
+            $errori[] = 'Inserisci la tua email: ci serve per risponderti.';
+        } elseif (!filter_var($dati['email'], FILTER_VALIDATE_EMAIL)) {
+            $errori[] = 'L\'indirizzo email inserito non è valido.';
+        }
+        if ($dati['messaggio'] === '') {
+            $errori[] = 'Scrivi il tuo messaggio.';
+        }
+        if (empty($_POST['privacy'])) {
+            $errori[] = 'Per inviare il messaggio devi acconsentire al trattamento dei dati.';
+        }
+
+        if (empty($errori)) {
+            require_once __DIR__ . '/includes/mailer.php';
+            require_once __DIR__ . '/includes/email_template.php';
+
+            $e = function ($testo) { return htmlspecialchars($testo, ENT_QUOTES, 'UTF-8'); };
+
+            // ---- Email di notifica per l'azienda (template brand) ----
+            $dati_email = [
+                'Nome'     => $e($dati['nome']),
+                'Email'    => '<a href="mailto:' . $e($dati['email']) . '" style="color:#7c5f20; font-weight:bold; text-decoration:none;">' . $e($dati['email']) . '</a>',
+                'Telefono' => $dati['telefono'] !== ''
+                    ? '<a href="tel:' . $e(preg_replace('/[^0-9+]/', '', $dati['telefono'])) . '" style="color:#7c5f20; font-weight:bold; text-decoration:none;">' . $e($dati['telefono']) . '</a>'
+                    : '',
+            ];
+
+            $corpo = email_notifica_richiesta('contatto', $dati_email, nl2br($e($dati['messaggio'])));
+
+            $risultato = send_email(
+                $email,
+                null,
+                'Nuovo messaggio dal sito — ' . $dati['nome'],
+                $corpo,
+                true,
+                [],
+                [
+                    'immagini'   => email_logo_immagini(),
+                    // Rispondendo alla notifica si scrive direttamente al cliente
+                    'rispondi_a' => ['email' => $dati['email'], 'nome' => $dati['nome']],
+                ]
+            );
+
+            if ($risultato['success']) {
+                $invio_ok = true;
+
+                // ---- Email di conferma al cliente. Un eventuale errore qui
+                // non blocca l'esito: il messaggio è comunque arrivato.
+                $conferma = email_conferma_richiesta(
+                    $dati['nome'],
+                    'contatto',
+                    ['Telefono' => $e($dati['telefono'])],
+                    nl2br($e($dati['messaggio']))
+                );
+                $esito_conferma = send_email(
+                    $dati['email'],
+                    null,
+                    'Abbiamo ricevuto il tuo messaggio — ' . $site_name,
+                    $conferma,
+                    true,
+                    [],
+                    ['immagini' => email_logo_immagini()]
+                );
+                $conferma_inviata = $esito_conferma['success'];
+                if (!$conferma_inviata) {
+                    error_log('[contatti] Email di conferma non inviata a ' . $dati['email'] . ': ' . $esito_conferma['error']);
+                }
+
+                // Svuota il modulo dopo l'invio riuscito
+                foreach ($dati as $campo => $ignora) {
+                    $dati[$campo] = '';
+                }
+            } else {
+                $errori[] = 'Non siamo riusciti a inviare il messaggio. Riprova tra qualche minuto oppure chiamaci al <a href="tel:' . $phone1_raw . '">' . $phone1 . '</a>.';
+            }
+        }
+    }
+}
+
 // Canali di contatto: le card principali della pagina
 $canali = [
     [
@@ -89,6 +195,7 @@ $canali = [
         'testo'  => 'Per richieste dettagliate, capitolati e documentazione tecnica.',
         'righe'  => [
             ['href' => 'mailto:' . $email, 'testo' => $email],
+            ['href' => '#scrivici', 'testo' => 'Oppure usa il modulo qui sotto'],
         ],
     ],
     [
@@ -542,6 +649,104 @@ $json_ld = [
             margin-bottom: 1rem;
         }
 
+        /* ================= MODULO "SCRIVICI" ================= */
+        #scrivici { padding: 1rem 0 5.5rem; background: #faf7ef; }
+
+        /* Card del modulo: bianca, con filo oro sul bordo alto */
+        .card-modulo {
+            position: relative;
+            background: #fff;
+            border: 1px solid #eee6d4;
+            border-radius: 22px;
+            padding: 2.4rem 2rem;
+            overflow: hidden;
+            box-shadow: 0 22px 50px rgba(46, 59, 66, .12);
+        }
+
+        .card-modulo::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--oro-scuro), var(--oro) 45%, #e8cc82 70%, var(--oro-scuro));
+        }
+
+        .card-modulo .form-label {
+            font-size: .78rem;
+            font-weight: 700;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            color: var(--scuro);
+        }
+
+        .card-modulo .form-control {
+            border: 1px solid #ecdfc0;
+            border-radius: 12px;
+            padding: .7rem .95rem;
+            font-size: .92rem;
+            color: var(--scuro);
+            background-color: #fffdf8;
+            transition: border-color .25s ease, box-shadow .25s ease;
+        }
+
+        .card-modulo .form-control:focus {
+            border-color: var(--oro);
+            box-shadow: 0 0 0 .2rem rgba(201, 162, 75, .2);
+        }
+
+        .card-modulo .form-control::placeholder { color: #b3aa97; }
+
+        .card-modulo .form-check-input:checked {
+            background-color: var(--oro-scuro);
+            border-color: var(--oro-scuro);
+        }
+
+        .card-modulo .form-check-input:focus {
+            border-color: var(--oro);
+            box-shadow: 0 0 0 .2rem rgba(201, 162, 75, .2);
+        }
+
+        .card-modulo .form-check-label { font-size: .82rem; line-height: 1.6; }
+
+        /* Honeypot: fuori schermo, invisibile agli utenti */
+        .campo-azienda {
+            position: absolute;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        /* Avvisi esito invio */
+        .avviso {
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            font-size: .9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: flex-start;
+            gap: .7rem;
+            margin-bottom: 1.4rem;
+        }
+
+        .avviso i { font-size: 1.15rem; flex-shrink: 0; }
+
+        .avviso.ok {
+            background: #eef7ea;
+            color: #35682d;
+            border: 1px solid #cbe5c2;
+        }
+
+        .avviso.errore {
+            background: #fbeeec;
+            color: #8f3125;
+            border: 1px solid #eccfc9;
+        }
+
+        .avviso ul { margin: .3rem 0 0; padding-left: 1.1rem; font-weight: 500; }
+
         /* ================= MAPPA + ORARI ================= */
         #dove-siamo { padding: 3rem 0 6rem; background: #faf7ef; }
 
@@ -816,8 +1021,25 @@ $json_ld = [
         @media (max-width: 575.98px) {
             /* Ritmo verticale più compatto: meno vuoto tra le sezioni */
             #canali { padding: 3.8rem 0 3.2rem; }
+            #scrivici { padding: .6rem 0 3.6rem; }
             #dove-siamo { padding: 2.6rem 0 4rem; }
             #cta-finale { padding: 3.4rem 0; }
+
+            /* Modulo: card compatta e bottone comodo per il pollice */
+            .card-modulo { padding: 1.8rem 1.3rem; }
+
+            .card-modulo .form-control {
+                font-size: 1rem;
+                padding: .78rem 1rem;
+            }
+
+            .card-modulo button[type="submit"] {
+                display: flex;
+                justify-content: center;
+                width: 100%;
+                padding-top: .85rem;
+                padding-bottom: .85rem;
+            }
 
             /* Righe impilate: gutter orizzontale standard e respiro ridotto */
             .row.g-5 { --bs-gutter-x: 1.5rem; --bs-gutter-y: 2.4rem; }
@@ -971,6 +1193,101 @@ $json_ld = [
                     </div>
                 </div>
                 <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= MODULO SCRIVICI ================= -->
+    <section id="scrivici">
+        <div class="container">
+            <div class="text-center mb-5 reveal">
+                <span class="hero-badge"><i class="bi bi-send"></i> Scrivici dal sito</span>
+                <h2 class="section-title mt-3">Inviaci un <span class="text-oro">messaggio</span></h2>
+                <div class="title-underline"></div>
+                <p class="mt-3 mx-auto" style="max-width: 640px;">
+                    Compila il modulo e ti rispondiamo via email al più presto.
+                    Riceverai subito una conferma di ricezione nella tua casella.
+                </p>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-8 reveal">
+                    <div class="card-modulo">
+                        <?php if ($invio_ok): ?>
+                        <div class="avviso ok" role="status">
+                            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                            <div>
+                                Messaggio inviato con successo! Ti risponderemo al più presto,
+                                di solito entro 24-48 ore.
+                                <?php if ($conferma_inviata): ?>
+                                Ti abbiamo inviato una email di conferma: se non la vedi,
+                                controlla la cartella spam.
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php elseif (!empty($errori)): ?>
+                        <div class="avviso errore" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                            <div>
+                                Controlla i campi del modulo:
+                                <ul>
+                                    <?php foreach ($errori as $err): ?>
+                                    <li><?php echo $err; ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
+                        <form method="post" action="contatti.php#scrivici" novalidate>
+                            <!-- Honeypot anti-spam: da lasciare vuoto -->
+                            <div class="campo-azienda" aria-hidden="true">
+                                <label for="azienda">Azienda</label>
+                                <input type="text" id="azienda" name="azienda" tabindex="-1" autocomplete="off">
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="nome">Nome e Cognome *</label>
+                                    <input type="text" class="form-control" id="nome" name="nome" placeholder="Mario Rossi" required
+                                           value="<?php echo htmlspecialchars($dati['nome'], ENT_QUOTES, 'UTF-8'); ?>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="telefono">Telefono <span class="fw-normal text-lowercase">(facoltativo)</span></label>
+                                    <input type="tel" class="form-control" id="telefono" name="telefono" placeholder="333 1234567"
+                                           value="<?php echo htmlspecialchars($dati['telefono'], ENT_QUOTES, 'UTF-8'); ?>">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" for="email-modulo">Email *</label>
+                                    <input type="email" class="form-control" id="email-modulo" name="email" placeholder="mario.rossi@email.it" required
+                                           value="<?php echo htmlspecialchars($dati['email'], ENT_QUOTES, 'UTF-8'); ?>">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" for="messaggio">Il tuo messaggio *</label>
+                                    <textarea class="form-control" id="messaggio" name="messaggio" rows="5" required
+                                              placeholder="Scrivici la tua richiesta: ti rispondiamo al più presto..."><?php echo htmlspecialchars($dati['messaggio'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="privacy" name="privacy" value="1" required>
+                                        <label class="form-check-label" for="privacy">
+                                            Acconsento al trattamento dei miei dati personali per
+                                            ricevere una risposta al mio messaggio. *
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn btn-oro w-100">
+                                        <i class="bi bi-send me-2"></i>Invia il messaggio
+                                    </button>
+                                    <p class="text-center mt-3 mb-0" style="font-size:.78rem; color:#8b9199;">
+                                        * Campi obbligatori — Per un preventivo dettagliato usa il
+                                        <a href="preventivo.php" style="color:var(--oro-testo); font-weight:600;">modulo preventivo</a>.
+                                    </p>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

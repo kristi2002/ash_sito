@@ -313,13 +313,28 @@ $foto_mosaico_url = array_map(function ($percorso) {
             background: var(--scuro);
         }
 
-        /* Immagine di sfondo con zoom lento (effetto "video") */
+        /* Sfondo hero: video con fallback immagine (zoom lento se il video non parte) */
         .hero-bg {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+        }
+
+        .hero-bg::before {
+            content: '';
             position: absolute;
             inset: 0;
             background: url('assets/img/hero.jpg') center center / cover no-repeat;
             animation: kenburns 22s ease-in-out infinite alternate;
             will-change: transform;
+        }
+
+        .hero-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         @keyframes kenburns {
@@ -371,6 +386,20 @@ $foto_mosaico_url = array_map(function ($percorso) {
         }
 
         .hero .lead { max-width: 560px; color: rgba(255, 255, 255, .88); }
+
+        /* Tagline in evidenza dentro il lead */
+        .hero .tagline-hero {
+            display: block;
+            font-size: 1.35em;
+            font-weight: 800;
+            letter-spacing: .3px;
+            background: linear-gradient(135deg, #f5e6ba, #e8cc82 55%, var(--oro));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 10px rgba(0, 0, 0, .4));
+            margin-bottom: .45rem;
+        }
 
         .hero .btn-outline-scuro {
             border-color: #fff;
@@ -1273,7 +1302,11 @@ $foto_mosaico_url = array_map(function ($percorso) {
 
     <!-- ================= HERO ================= -->
     <header class="hero" id="home">
-        <div class="hero-bg" aria-hidden="true"></div>
+        <div class="hero-bg" aria-hidden="true">
+            <video class="hero-video" autoplay muted loop playsinline preload="metadata" poster="assets/img/hero.jpg">
+                <source src="assets/video/hero.mp4" type="video/mp4">
+            </video>
+        </div>
         <div class="hero-overlay" aria-hidden="true"></div>
         <div class="container position-relative">
             <div class="row">
@@ -1286,7 +1319,8 @@ $foto_mosaico_url = array_map(function ($percorso) {
                         <span class="gold">Finiture Edili</span>
                     </h1>
                     <p class="lead mt-4 fade-up delay-2">
-                        <?php echo $tagline; ?>: cartongesso, sistemi a secco, rasatura armata,
+                        <span class="tagline-hero"><?php echo $tagline; ?>.</span>
+                        Cartongesso, sistemi a secco, rasatura armata,
                         tinteggiatura, intonachino e carta da parati. Trasformiamo i tuoi ambienti
                         con cura artigianale e materiali di qualità.
                     </p>
@@ -1412,13 +1446,15 @@ $foto_mosaico_url = array_map(function ($percorso) {
                         ti rispondiamo in tempi rapidi.
                     </p>
                 </div>
-                <div class="col-lg-4 text-lg-end reveal" style="transition-delay:.15s">
-                    <a href="tel:<?php echo $phone1_raw; ?>" class="btn btn-bianco mb-3 mb-lg-0 me-lg-2">
-                        <i class="bi bi-telephone-outbound me-2"></i>Chiama Ora
-                    </a>
-                    <a href="preventivo.php" class="btn btn-bianco">
-                        <i class="bi bi-envelope-paper me-2"></i>Richiedi Preventivo
-                    </a>
+                <div class="col-lg-4 reveal" style="transition-delay:.15s">
+                    <div class="d-flex flex-wrap gap-3 justify-content-lg-end">
+                        <a href="tel:<?php echo $phone1_raw; ?>" class="btn btn-bianco">
+                            <i class="bi bi-telephone-outbound me-2"></i>Chiama Ora
+                        </a>
+                        <a href="preventivo.php" class="btn btn-bianco">
+                            <i class="bi bi-envelope-paper me-2"></i>Richiedi Preventivo
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

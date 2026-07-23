@@ -13,27 +13,30 @@ $phone2_raw = '+393383386946';
 $email      = 'ashfiniturecontract@outlook.it';
 $address    = 'Via Adigrat 3/A, 62032 Camerino (MC)';
 
-// Tutti i servizi (per menu). 'url' => null: pagina non ancora creata.
+// Tutti i servizi (per menu e card "Cosa facciamo"), con foto della card
 $servizi = [
     [
         'slug'   => 'cartongesso',
         'icona'  => 'bi-bricks',
         'titolo' => 'Cartongesso',
         'url'    => 'servizi/cartongesso.php',
+        'foto'   => 'assets/img/servizi/cartongesso-stuccatura.jpg',
         'descrizione' => 'Pareti divisorie, controsoffitti e contropareti su misura.',
     ],
     [
         'slug'   => 'sistemi-a-secco',
         'icona'  => 'bi-layers',
         'titolo' => 'Sistemi a Secco',
-        'url'    => null,
+        'url'    => 'servizi/sistemi-a-secco.php',
+        'foto'   => 'assets/img/servizi/card-sistemi-a-secco.jpg',
         'descrizione' => 'Costruzioni rapide e pulite ad alte prestazioni.',
     ],
     [
         'slug'   => 'rasatura-armata',
         'icona'  => 'bi-shield-check',
         'titolo' => 'Rasatura Armata',
-        'url'    => null,
+        'url'    => 'servizi/rasatura-armata.php',
+        'foto'   => 'assets/img/servizi/card-rasatura-armata.jpg',
         'descrizione' => 'Superfici uniformi e resistenti alle crepe.',
     ],
     [
@@ -41,20 +44,23 @@ $servizi = [
         'icona'  => 'bi-paint-bucket',
         'titolo' => 'Tinteggiatura',
         'url'    => 'servizi/tinteggiatura.php',
+        'foto'   => 'assets/img/servizi/tinteggiatura-ciclo.jpg',
         'descrizione' => 'Colori a regola d\'arte per interni ed esterni.',
     ],
     [
         'slug'   => 'intonachino',
         'icona'  => 'bi-brush',
         'titolo' => 'Intonachino',
-        'url'    => null,
+        'url'    => 'servizi/intonachino.php',
+        'foto'   => 'assets/img/servizi/card-intonachino.jpg',
         'descrizione' => 'Finitura materica per facciate e interni di pregio.',
     ],
     [
         'slug'   => 'carta-da-parati',
         'icona'  => 'bi-flower1',
         'titolo' => 'Carta da Parati',
-        'url'    => null,
+        'url'    => 'servizi/carta-da-parati.php',
+        'foto'   => 'assets/img/servizi/card-carta-da-parati.jpg',
         'descrizione' => 'Posa professionale e grafiche personalizzate.',
     ],
 ];
@@ -63,6 +69,23 @@ $servizi = [
 function link_servizio($servizio) {
     return $servizio['url'] !== null ? $servizio['url'] : 'index.php#servizio-' . $servizio['slug'];
 }
+
+// Scatti reali dai cantieri (cartella "photo colage") per la fascia fotografica
+$foto_cantiere = [];
+foreach (['jpg', 'jpeg', 'png', 'webp'] as $estensione) {
+    $trovate = glob('photo colage/*.' . $estensione);
+    if ($trovate) {
+        $foto_cantiere = array_merge($foto_cantiere, $trovate);
+    }
+}
+$foto_cantiere = array_values(array_unique($foto_cantiere));
+sort($foto_cantiere);
+$foto_cantiere = array_slice($foto_cantiere, 0, 8);
+
+// Percorsi pronti per l'HTML (gli spazi nei nomi file vanno codificati)
+$foto_cantiere = array_map(function ($percorso) {
+    return implode('/', array_map('rawurlencode', explode('/', $percorso)));
+}, $foto_cantiere);
 
 // Punti di forza (lista accanto alla storia)
 $punti_forza = [
@@ -679,6 +702,44 @@ $json_ld = [
 
         .fase-step p { font-size: .88rem; margin-bottom: 0; }
 
+        /* ================= DAL CANTIERE (FASCIA FOTO) ================= */
+        #dal-cantiere { padding: 5.5rem 0; background: linear-gradient(180deg, #faf7ef 0%, #fdfbf5 100%); }
+
+        .banda-cantiere {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .banda-cantiere a {
+            position: relative;
+            display: block;
+            overflow: hidden;
+            border-radius: 16px;
+            aspect-ratio: 1 / 1;
+            background: var(--oro-chiaro);
+            box-shadow: 0 3px 10px rgba(46, 59, 66, .07);
+            transition: transform .3s ease, box-shadow .3s ease;
+        }
+
+        .banda-cantiere img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .5s ease;
+        }
+
+        .banda-cantiere a:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 34px rgba(169, 130, 47, .26);
+        }
+
+        .banda-cantiere a:hover img { transform: scale(1.08); }
+
+        @media (max-width: 767.98px) {
+            .banda-cantiere { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        }
+
         /* ================= COSA FACCIAMO ================= */
         #cosa-facciamo { padding: 5.5rem 0; background: var(--crema); position: relative; }
 
@@ -692,29 +753,73 @@ $json_ld = [
             background: linear-gradient(90deg, var(--oro-scuro) 0%, var(--oro) 25%, #e8cc82 50%, var(--oro) 75%, var(--oro-scuro) 100%);
         }
 
-        .riga-servizio {
+        /* Card servizio con foto: linea oro che si espande dal centro in alto */
+        .card-specialita {
+            position: relative;
             display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: #fff;
-            border: 1px solid #eee6d4;
-            border-radius: 16px;
-            padding: 1.1rem 1.3rem;
+            flex-direction: column;
             height: 100%;
+            overflow: hidden;
+            border: 1px solid #eee6d4;
+            border-radius: 18px;
+            background: #fff;
             color: var(--testo);
             text-decoration: none;
             transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
         }
 
-        .riga-servizio:hover {
-            transform: translateY(-4px);
+        .card-specialita::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--oro), var(--oro-scuro));
+            border-radius: 0 0 4px 4px;
+            transition: width .4s ease;
+            z-index: 2;
+        }
+
+        .card-specialita:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 18px 40px rgba(169, 130, 47, .16);
             border-color: var(--oro);
-            box-shadow: 0 14px 30px rgba(169, 130, 47, .18);
             color: var(--testo);
         }
 
-        .riga-servizio .icona-riga {
-            flex-shrink: 0;
+        .card-specialita:hover::after { width: 55%; }
+
+        .card-specialita .foto {
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 16 / 10;
+            background: var(--oro-chiaro);
+        }
+
+        .card-specialita .foto img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .5s ease;
+        }
+
+        .card-specialita:hover .foto img { transform: scale(1.07); }
+
+        .card-specialita .corpo {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            padding: 2.2rem 1.5rem 1.5rem;
+        }
+
+        /* Icona a cavallo tra foto e testo */
+        .card-specialita .icona {
+            position: absolute;
+            top: -27px;
+            left: 1.5rem;
             width: 54px;
             height: 54px;
             border-radius: 14px;
@@ -723,37 +828,45 @@ $json_ld = [
             justify-content: center;
             font-size: 1.4rem;
             color: var(--oro-scuro);
-            background: var(--oro-chiaro);
+            background: #fff;
             border: 1px solid #ecdfc0;
+            box-shadow: 0 8px 20px rgba(201, 162, 75, .22);
             transition: background .3s ease, color .3s ease, transform .3s ease;
         }
 
-        .riga-servizio:hover .icona-riga {
+        .card-specialita:hover .icona {
             background: linear-gradient(135deg, var(--oro), var(--oro-scuro));
             color: #fff;
             transform: rotate(-6deg) scale(1.06);
         }
 
-        .riga-servizio h5 {
-            font-size: .95rem;
+        .card-specialita h5 {
+            font-size: 1.02rem;
             font-weight: 700;
-            margin-bottom: .2rem;
+            margin-bottom: .45rem;
         }
 
-        .riga-servizio p {
-            font-size: .82rem;
-            line-height: 1.5;
-            margin-bottom: 0;
+        .card-specialita p {
+            font-size: .85rem;
+            line-height: 1.65;
+            margin-bottom: 1rem;
         }
 
-        .riga-servizio .freccia {
-            margin-left: auto;
-            color: var(--oro-scuro);
-            font-size: 1.1rem;
-            transition: transform .25s ease;
+        .card-specialita .scopri {
+            margin-top: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            font-size: .78rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--oro-testo);
         }
 
-        .riga-servizio:hover .freccia { transform: translateX(4px); }
+        .card-specialita .scopri i { transition: transform .25s ease; }
+
+        .card-specialita:hover .scopri i { transform: translateX(4px); }
 
         /* ================= CTA FINALE ================= */
         #cta-finale {
@@ -944,7 +1057,7 @@ $json_ld = [
         /* ================= MOBILE: TELEFONI ================= */
         @media (max-width: 575.98px) {
             /* Ritmo verticale più compatto: meno vuoto tra le sezioni */
-            #storia, #valori, #come-lavoriamo, #cosa-facciamo { padding: 3.8rem 0; }
+            #storia, #valori, #come-lavoriamo, #dal-cantiere, #cosa-facciamo { padding: 3.8rem 0; }
             #cta-finale { padding: 3.4rem 0; }
 
             /* Righe impilate: gutter orizzontale standard e respiro ridotto */
@@ -1156,6 +1269,35 @@ $json_ld = [
         </div>
     </section>
 
+    <!-- ================= DAL CANTIERE (FASCIA FOTO) ================= -->
+    <?php if (!empty($foto_cantiere)): ?>
+    <section id="dal-cantiere">
+        <div class="container">
+            <div class="text-center mb-5 reveal">
+                <span class="hero-badge"><i class="bi bi-camera"></i> Dal cantiere</span>
+                <h2 class="section-title mt-3">Il lavoro, visto <span class="text-oro">da vicino</span></h2>
+                <div class="title-underline"></div>
+                <p class="mt-3 mx-auto" style="max-width: 640px;">
+                    Qualche scatto autentico dai nostri cantieri: superfici, dettagli
+                    e finiture così come le consegniamo ai clienti.
+                </p>
+            </div>
+            <div class="banda-cantiere reveal">
+                <?php foreach ($foto_cantiere as $src): ?>
+                <a href="realizzazioni.php" aria-label="Guarda le realizzazioni di <?php echo $site_name; ?>">
+                    <img src="<?php echo $src; ?>" alt="Lavoro realizzato da <?php echo $site_name; ?>" loading="lazy">
+                </a>
+                <?php endforeach; ?>
+            </div>
+            <div class="text-center mt-4 reveal">
+                <a href="realizzazioni.php" class="btn btn-oro">
+                    <i class="bi bi-images me-2"></i>Guarda tutte le realizzazioni
+                </a>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
+
     <!-- ================= COSA FACCIAMO ================= -->
     <section id="cosa-facciamo">
         <div class="container">
@@ -1170,13 +1312,16 @@ $json_ld = [
             <div class="row g-4">
                 <?php foreach ($servizi as $i => $servizio): ?>
                 <div class="col-md-6 col-lg-4 reveal" style="transition-delay: <?php echo ($i % 3) * 0.12; ?>s">
-                    <a class="riga-servizio" href="<?php echo link_servizio($servizio); ?>">
-                        <span class="icona-riga"><i class="bi <?php echo $servizio['icona']; ?>" aria-hidden="true"></i></span>
-                        <span>
+                    <a class="card-specialita" href="<?php echo link_servizio($servizio); ?>">
+                        <div class="foto">
+                            <img src="<?php echo $servizio['foto']; ?>" alt="<?php echo $servizio['titolo']; ?> — lavorazione di <?php echo $site_name; ?>" loading="lazy">
+                        </div>
+                        <div class="corpo">
+                            <span class="icona"><i class="bi <?php echo $servizio['icona']; ?>" aria-hidden="true"></i></span>
                             <h5><?php echo $servizio['titolo']; ?></h5>
                             <p><?php echo $servizio['descrizione']; ?></p>
-                        </span>
-                        <i class="bi bi-arrow-right freccia" aria-hidden="true"></i>
+                            <span class="scopri">Scopri di più <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+                        </div>
                     </a>
                 </div>
                 <?php endforeach; ?>
@@ -1195,13 +1340,15 @@ $json_ld = [
                         gli spazi e ti proponiamo la soluzione migliore, senza impegno.
                     </p>
                 </div>
-                <div class="col-lg-4 text-lg-end reveal" style="transition-delay:.15s">
-                    <a href="tel:<?php echo $phone1_raw; ?>" class="btn btn-bianco mb-3 mb-lg-0 me-lg-2">
-                        <i class="bi bi-telephone-outbound me-2"></i>Chiama Ora
-                    </a>
-                    <a href="preventivo.php" class="btn btn-bianco">
-                        <i class="bi bi-envelope-paper me-2"></i>Richiedi Preventivo
-                    </a>
+                <div class="col-lg-4 reveal" style="transition-delay:.15s">
+                    <div class="d-flex flex-wrap gap-3 justify-content-lg-end">
+                        <a href="tel:<?php echo $phone1_raw; ?>" class="btn btn-bianco">
+                            <i class="bi bi-telephone-outbound me-2"></i>Chiama Ora
+                        </a>
+                        <a href="preventivo.php" class="btn btn-bianco">
+                            <i class="bi bi-envelope-paper me-2"></i>Richiedi Preventivo
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

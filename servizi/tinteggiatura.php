@@ -1600,13 +1600,15 @@ $json_ld = [
                         <span>Camerino, provincia di Macerata e Marche</span>
                     </div>
                 </div>
-                <div class="col-lg-5 text-lg-end reveal" style="transition-delay:.15s">
-                    <a href="tel:<?php echo $phone1_raw; ?>" class="btn btn-bianco mb-3 mb-lg-0 me-lg-2">
-                        <i class="bi bi-telephone-outbound me-2"></i>Chiama Ora
-                    </a>
-                    <a href="https://wa.me/393296447797" target="_blank" rel="noopener" class="btn btn-bianco">
-                        <i class="bi bi-whatsapp me-2"></i>WhatsApp
-                    </a>
+                <div class="col-lg-5 reveal" style="transition-delay:.15s">
+                    <div class="d-flex flex-wrap gap-3 justify-content-lg-end">
+                        <a href="tel:<?php echo $phone1_raw; ?>" class="btn btn-bianco">
+                            <i class="bi bi-telephone-outbound me-2"></i>Chiama Ora
+                        </a>
+                        <a href="https://wa.me/393296447797" target="_blank" rel="noopener" class="btn btn-bianco">
+                            <i class="bi bi-whatsapp me-2"></i>WhatsApp
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

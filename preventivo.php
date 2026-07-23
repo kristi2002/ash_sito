@@ -67,8 +67,9 @@ function link_servizio($servizio) {
 // ============================================================
 //  GESTIONE INVIO MODULO
 // ============================================================
-$invio_ok      = false;
-$errori        = [];
+$invio_ok         = false;
+$conferma_inviata = false;
+$errori           = [];
 $dati = [
     'nome'      => '',
     'telefono'  => '',
@@ -166,31 +167,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($errori)) {
             require_once __DIR__ . '/includes/mailer.php';
+            require_once __DIR__ . '/includes/email_template.php';
 
             $e = function ($testo) { return htmlspecialchars($testo, ENT_QUOTES, 'UTF-8'); };
 
-            $corpo = '<h2>Nuova richiesta di preventivo dal sito</h2>'
-                . '<p><strong>Nome:</strong> '     . $e($dati['nome'])     . '</p>'
-                . '<p><strong>Telefono:</strong> ' . ($dati['telefono'] !== '' ? '<a href="tel:' . $e(preg_replace('/[^0-9+]/', '', $dati['telefono'])) . '">' . $e($dati['telefono']) . '</a>' : '—') . '</p>'
-                . '<p><strong>Email:</strong> '    . ($dati['email']    !== '' ? '<a href="mailto:' . $e($dati['email']) . '">' . $e($dati['email']) . '</a>' : '—') . '</p>'
-                . '<p><strong>Comune / zona:</strong> ' . ($dati['comune'] !== '' ? $e($dati['comune']) : '—') . '</p>'
-                . '<p><strong>Servizio:</strong> ' . ($dati['servizio'] !== '' ? $e($dati['servizio']) : '—') . '</p>'
-                . '<p><strong>Descrizione del lavoro:</strong></p>'
-                . '<p>' . nl2br($e($dati['messaggio'])) . '</p>';
+            // ---- Email di notifica per l'azienda (template brand) ----
+            $dati_email = [
+                'Nome'          => $e($dati['nome']),
+                'Telefono'      => $dati['telefono'] !== ''
+                    ? '<a href="tel:' . $e(preg_replace('/[^0-9+]/', '', $dati['telefono'])) . '" style="color:#7c5f20; font-weight:bold; text-decoration:none;">' . $e($dati['telefono']) . '</a>'
+                    : '',
+                'Email'         => $dati['email'] !== ''
+                    ? '<a href="mailto:' . $e($dati['email']) . '" style="color:#7c5f20; font-weight:bold; text-decoration:none;">' . $e($dati['email']) . '</a>'
+                    : '',
+                'Comune / zona' => $e($dati['comune']),
+                'Servizio'      => $e($dati['servizio']),
+            ];
+            $nomi_allegati = array_map(function ($a) { return $a['nome']; }, $allegati);
 
-            if (!empty($allegati)) {
-                $corpo .= '<p><strong>Documenti allegati:</strong> '
-                    . implode(', ', array_map(function ($a) use ($e) { return $e($a['nome']); }, $allegati))
-                    . '</p>';
-            }
+            $corpo = email_notifica_richiesta('preventivo', $dati_email, nl2br($e($dati['messaggio'])), $nomi_allegati);
 
             $oggetto = 'Richiesta preventivo — ' . $dati['nome']
                 . ($dati['servizio'] !== '' ? ' (' . $dati['servizio'] . ')' : '');
 
-            $risultato = send_email($email, null, $oggetto, $corpo, true, $allegati);
+            // Rispondendo alla notifica si scrive direttamente al cliente
+            $opzioni = ['immagini' => email_logo_immagini()];
+            if ($dati['email'] !== '') {
+                $opzioni['rispondi_a'] = ['email' => $dati['email'], 'nome' => $dati['nome']];
+            }
+
+            $risultato = send_email($email, null, $oggetto, $corpo, true, $allegati, $opzioni);
 
             if ($risultato['success']) {
                 $invio_ok = true;
+
+                // ---- Email di conferma al cliente (se ha lasciato l'email).
+                // Un eventuale errore qui non blocca l'esito: la richiesta
+                // è comunque arrivata in azienda.
+                if ($dati['email'] !== '') {
+                    $riepilogo = [
+                        'Servizio'      => $e($dati['servizio']),
+                        'Comune / zona' => $e($dati['comune']),
+                        'Telefono'      => $e($dati['telefono']),
+                    ];
+                    $conferma = email_conferma_richiesta($dati['nome'], 'preventivo', $riepilogo, nl2br($e($dati['messaggio'])));
+
+                    $esito_conferma = send_email(
+                        $dati['email'],
+                        null,
+                        'Abbiamo ricevuto la tua richiesta di preventivo — ' . $site_name,
+                        $conferma,
+                        true,
+                        [],
+                        ['immagini' => email_logo_immagini()]
+                    );
+                    $conferma_inviata = $esito_conferma['success'];
+                    if (!$conferma_inviata) {
+                        error_log('[preventivo] Email di conferma non inviata a ' . $dati['email'] . ': ' . $esito_conferma['error']);
+                    }
+                }
+
                 // Svuota il modulo dopo l'invio riuscito
                 foreach ($dati as $campo => $ignora) {
                     $dati[$campo] = '';
@@ -1221,6 +1257,10 @@ $json_ld = [
                             <div>
                                 Richiesta inviata con successo! Ti ricontatteremo al più presto,
                                 di solito entro 24-48 ore.
+                                <?php if ($conferma_inviata): ?>
+                                Ti abbiamo inviato una email di conferma con il riepilogo
+                                della richiesta: se non la vedi, controlla la cartella spam.
+                                <?php endif; ?>
                             </div>
                         </div>
                         <?php elseif (!empty($errori)): ?>

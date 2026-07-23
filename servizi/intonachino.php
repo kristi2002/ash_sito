@@ -1344,7 +1344,7 @@ $json_ld = [
                             <?php endforeach; ?>
                         </ul>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="../index.php#chi-siamo">Chi Siamo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../chi-siamo.php">Chi Siamo</a></li>
                     <li class="nav-item"><a class="nav-link" href="../realizzazioni.php">Realizzazioni</a></li>
                     <li class="nav-item"><a class="nav-link" href="../contatti.php">Contatti</a></li>
                     <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
@@ -1601,13 +1601,15 @@ $json_ld = [
                         <span>Camerino, provincia di Macerata e Marche</span>
                     </div>
                 </div>
-                <div class="col-lg-5 text-lg-end reveal" style="transition-delay:.15s">
-                    <a href="tel:<?php echo $phone1_raw; ?>" class="btn btn-bianco mb-3 mb-lg-0 me-lg-2">
-                        <i class="bi bi-telephone-outbound me-2"></i>Chiama Ora
-                    </a>
-                    <a href="https://wa.me/393296447797" target="_blank" rel="noopener" class="btn btn-bianco">
-                        <i class="bi bi-whatsapp me-2"></i>WhatsApp
-                    </a>
+                <div class="col-lg-5 reveal" style="transition-delay:.15s">
+                    <div class="d-flex flex-wrap gap-3 justify-content-lg-end">
+                        <a href="tel:<?php echo $phone1_raw; ?>" class="btn btn-bianco">
+                            <i class="bi bi-telephone-outbound me-2"></i>Chiama Ora
+                        </a>
+                        <a href="https://wa.me/393296447797" target="_blank" rel="noopener" class="btn btn-bianco">
+                            <i class="bi bi-whatsapp me-2"></i>WhatsApp
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1663,7 +1665,7 @@ $json_ld = [
                     <ul class="list-unstyled d-grid gap-2 mb-0">
                         <li><a href="../index.php"><i class="bi bi-chevron-right small"></i> Home</a></li>
                         <li><a href="../index.php#servizi"><i class="bi bi-chevron-right small"></i> Servizi</a></li>
-                        <li><a href="../index.php#chi-siamo"><i class="bi bi-chevron-right small"></i> Chi Siamo</a></li>
+                        <li><a href="../chi-siamo.php"><i class="bi bi-chevron-right small"></i> Chi Siamo</a></li>
                         <li><a href="../realizzazioni.php"><i class="bi bi-chevron-right small"></i> Realizzazioni</a></li>
                         <li><a href="../contatti.php"><i class="bi bi-chevron-right small"></i> Contatti</a></li>
                         <li><a href="../preventivo.php"><i class="bi bi-chevron-right small"></i> Richiedi Preventivo</a></li>
