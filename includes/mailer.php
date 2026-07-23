@@ -61,15 +61,16 @@ function mail_config(string $key, string $default = ''): string
 /**
  * Invia una email.
  *
- * @param string|array      $to      Destinatario/i
- * @param string|array|null $cc      Copia conoscenza (opzionale)
- * @param string            $oggetto Oggetto della mail
- * @param string            $testo   Corpo del messaggio (HTML o testo)
- * @param bool              $isHtml  true se $testo è HTML (default true)
+ * @param string|array      $to       Destinatario/i
+ * @param string|array|null $cc       Copia conoscenza (opzionale)
+ * @param string            $oggetto  Oggetto della mail
+ * @param string            $testo    Corpo del messaggio (HTML o testo)
+ * @param bool              $isHtml   true se $testo è HTML (default true)
+ * @param array             $allegati Allegati: array di ['path' => percorso file, 'nome' => nome file]
  *
  * @return array{success: bool, error: string|null}
  */
-function send_email($to, $cc, string $oggetto, string $testo, bool $isHtml = true): array
+function send_email($to, $cc, string $oggetto, string $testo, bool $isHtml = true, array $allegati = []): array
 {
     $to = array_filter((array) $to);
     $cc = array_filter((array) ($cc ?? []));
@@ -82,21 +83,26 @@ function send_email($to, $cc, string $oggetto, string $testo, bool $isHtml = tru
             return ['success' => false, 'error' => "Indirizzo email non valido: $addr"];
         }
     }
+    foreach ($allegati as $allegato) {
+        if (empty($allegato['path']) || !is_readable($allegato['path'])) {
+            return ['success' => false, 'error' => 'Allegato non leggibile: ' . ($allegato['nome'] ?? $allegato['path'] ?? '?')];
+        }
+    }
 
     // PHPMailer disponibile? (composer require phpmailer/phpmailer)
     $autoload = __DIR__ . '/../vendor/autoload.php';
     if (file_exists($autoload)) {
         require_once $autoload;
         if (class_exists(\PHPMailer\PHPMailer\PHPMailer::class)) {
-            return send_email_phpmailer($to, $cc, $oggetto, $testo, $isHtml);
+            return send_email_phpmailer($to, $cc, $oggetto, $testo, $isHtml, $allegati);
         }
     }
 
-    return send_email_native($to, $cc, $oggetto, $testo, $isHtml);
+    return send_email_native($to, $cc, $oggetto, $testo, $isHtml, $allegati);
 }
 
 /** Invio via PHPMailer + SMTP. */
-function send_email_phpmailer(array $to, array $cc, string $oggetto, string $testo, bool $isHtml): array
+function send_email_phpmailer(array $to, array $cc, string $oggetto, string $testo, bool $isHtml, array $allegati = []): array
 {
     $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
     try {
@@ -126,6 +132,9 @@ function send_email_phpmailer(array $to, array $cc, string $oggetto, string $tes
         if ($isHtml) {
             $mail->AltBody = strip_tags($testo);
         }
+        foreach ($allegati as $allegato) {
+            $mail->addAttachment($allegato['path'], $allegato['nome'] ?? '');
+        }
 
         $mail->send();
         return ['success' => true, 'error' => null];
@@ -135,7 +144,7 @@ function send_email_phpmailer(array $to, array $cc, string $oggetto, string $tes
 }
 
 /** Invio via mail() nativa di PHP (fallback). */
-function send_email_native(array $to, array $cc, string $oggetto, string $testo, bool $isHtml): array
+function send_email_native(array $to, array $cc, string $oggetto, string $testo, bool $isHtml, array $allegati = []): array
 {
     $fromEmail = mail_config('MAIL_FROM_EMAIL', 'ashfiniturecontract@outlook.it');
     $fromName  = mail_config('MAIL_FROM_NAME', 'A.S.H. Finiture Contract');
@@ -147,10 +156,39 @@ function send_email_native(array $to, array $cc, string $oggetto, string $testo,
         $headers[] = 'Cc: ' . implode(', ', $cc);
     }
     $headers[] = 'MIME-Version: 1.0';
-    $headers[] = 'Content-Type: ' . ($isHtml ? 'text/html' : 'text/plain') . '; charset=UTF-8';
+
+    $tipoTesto = ($isHtml ? 'text/html' : 'text/plain') . '; charset=UTF-8';
+
+    if (empty($allegati)) {
+        $headers[] = 'Content-Type: ' . $tipoTesto;
+        $corpo = $testo;
+    } else {
+        // Messaggio multipart/mixed: corpo + allegati in base64
+        $confine   = 'ash_' . md5(uniqid((string) mt_rand(), true));
+        $headers[] = 'Content-Type: multipart/mixed; boundary="' . $confine . '"';
+
+        $corpo  = "--$confine\r\n";
+        $corpo .= "Content-Type: $tipoTesto\r\n";
+        $corpo .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
+        $corpo .= $testo . "\r\n";
+
+        foreach ($allegati as $allegato) {
+            $nome      = basename($allegato['nome'] ?? $allegato['path']);
+            $contenuto = file_get_contents($allegato['path']);
+            if ($contenuto === false) {
+                continue;
+            }
+            $corpo .= "--$confine\r\n";
+            $corpo .= 'Content-Type: application/octet-stream; name="' . $nome . "\"\r\n";
+            $corpo .= "Content-Transfer-Encoding: base64\r\n";
+            $corpo .= 'Content-Disposition: attachment; filename="' . $nome . "\"\r\n\r\n";
+            $corpo .= chunk_split(base64_encode($contenuto)) . "\r\n";
+        }
+        $corpo .= "--$confine--";
+    }
 
     $subject = mb_encode_mimeheader($oggetto, 'UTF-8');
-    $ok = @mail(implode(', ', $to), $subject, $testo, implode("\r\n", $headers));
+    $ok = @mail(implode(', ', $to), $subject, $corpo, implode("\r\n", $headers));
 
     return $ok
         ? ['success' => true, 'error' => null]

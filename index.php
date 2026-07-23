@@ -19,36 +19,48 @@ $servizi = [
         'slug'        => 'cartongesso',
         'icona'       => 'bi-bricks',
         'titolo'      => 'Cartongesso',
+        'url'         => 'servizi/cartongesso.php',
+        'foto'        => 'assets/img/servizi/cartongesso-stuccatura.jpg',
         'descrizione' => 'Pareti divisorie, controsoffitti e contropareti in cartongesso: soluzioni versatili, veloci e dal risultato impeccabile.',
     ],
     [
         'slug'        => 'sistemi-a-secco',
         'icona'       => 'bi-layers',
         'titolo'      => 'Sistemi a Secco',
+        'url'         => 'servizi/sistemi-a-secco.php',
+        'foto'        => 'assets/img/servizi/card-sistemi-a-secco.jpg',
         'descrizione' => 'Costruzioni a secco moderne per isolamento termico e acustico, senza opere murarie invasive e con cantieri più puliti.',
     ],
     [
         'slug'        => 'rasatura-armata',
         'icona'       => 'bi-shield-check',
         'titolo'      => 'Rasatura Armata',
+        'url'         => 'servizi/rasatura-armata.php',
+        'foto'        => 'assets/img/servizi/card-rasatura-armata.jpg',
         'descrizione' => 'Rasature rinforzate con rete per superfici solide, uniformi e resistenti nel tempo, ideali su cappotti e supporti critici.',
     ],
     [
         'slug'        => 'tinteggiatura',
         'icona'       => 'bi-paint-bucket',
         'titolo'      => 'Tinteggiatura',
+        'url'         => 'servizi/tinteggiatura.php',
+        'foto'        => 'assets/img/servizi/tinteggiatura-ciclo.jpg',
         'descrizione' => 'Tinteggiature interne ed esterne con prodotti di qualità: colori uniformi, finiture curate e ambienti che si rinnovano.',
     ],
     [
         'slug'        => 'intonachino',
         'icona'       => 'bi-brush',
         'titolo'      => 'Intonachino',
+        'url'         => 'servizi/intonachino.php',
+        'foto'        => 'assets/img/servizi/card-intonachino.jpg',
         'descrizione' => 'Finiture decorative ad intonachino per dare carattere, materia ed eleganza alle pareti di casa e ambienti commerciali.',
     ],
     [
         'slug'        => 'carta-da-parati',
         'icona'       => 'bi-flower1',
         'titolo'      => 'Carta da Parati',
+        'url'         => 'servizi/carta-da-parati.php',
+        'foto'        => 'assets/img/servizi/card-carta-da-parati.jpg',
         'descrizione' => 'Posa professionale di carta da parati e rivestimenti decorativi: precisione nei dettagli per pareti uniche e di design.',
     ],
 ];
@@ -59,6 +71,14 @@ $punti_forza = [
     'Materiali certificati e di qualità',
     'Puntualità e rispetto delle consegne',
     'Cura artigianale di ogni dettaglio',
+];
+
+// Come lavoriamo (identico per tutti i servizi)
+$fasi_lavoro = [
+    ['icona' => 'bi-search',            'titolo' => 'Sopralluogo', 'testo' => 'Sopralluogo e ascolto delle esigenze.'],
+    ['icona' => 'bi-file-earmark-text', 'titolo' => 'Preventivo',  'testo' => 'Preventivo chiaro e dettagliato.'],
+    ['icona' => 'bi-tools',             'titolo' => 'Esecuzione',  'testo' => 'Esecuzione a regola d\'arte, con cantiere pulito.'],
+    ['icona' => 'bi-patch-check',       'titolo' => 'Consegna',    'testo' => 'Consegna e verifica finale col cliente.'],
 ];
 
 // Foto dei lavori per il mosaico "Realizzazioni": lette dalla cartella "photo colage".
@@ -82,7 +102,7 @@ $foto_mosaico_url = array_map(function ($percorso) {
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?php echo $site_name; ?> — Specialisti in Finiture Edili a Camerino (MC)</title>
     <meta name="description" content="A.S.H. Finiture Contract di Ahmed Abdelaziz: specialisti in finiture edili. Cartongesso, sistemi a secco, rasatura armata, tinteggiatura, intonachino e carta da parati a Camerino (MC) e provincia.">
 
@@ -104,7 +124,7 @@ $foto_mosaico_url = array_map(function ($percorso) {
             --oro-scuro:  #a9822f;
             --oro-testo:  #7c5f20; /* oro profondo: leggibile su bianco (WCAG AA) */
             --oro-chiaro: #f5edd9;
-            --crema:      #faf8f3;
+            --crema:      #f5eee0;
             --scuro:      #2e3b42;
             --testo:      #4a5158;
         }
@@ -116,7 +136,7 @@ $foto_mosaico_url = array_map(function ($percorso) {
         body {
             font-family: 'Montserrat', sans-serif;
             color: var(--testo);
-            background-color: #ffffff;
+            background-color: #faf7ef; /* bianco caldo: toglie l'effetto "tutto bianco" */
             overflow-x: hidden;
         }
 
@@ -237,6 +257,17 @@ $foto_mosaico_url = array_map(function ($percorso) {
             .navbar .dropdown:hover > .dropdown-menu {
                 display: block;
                 animation: comparsa .25s ease;
+            }
+
+            /* Ponte invisibile sul distacco tra bottone e menu: evita che
+               l'hover si interrompa attraversando lo spazio vuoto */
+            .menu-servizi::before {
+                content: "";
+                position: absolute;
+                top: -.6rem;
+                left: 0;
+                right: 0;
+                height: .6rem;
             }
         }
 
@@ -394,7 +425,7 @@ $foto_mosaico_url = array_map(function ($percorso) {
 
         /* ================= SERVIZI ================= */
         /* Sezione ben staccata dall'hero (spaziatura corretta) */
-        #servizi { padding: 7rem 0 5.5rem; background: #ffffff; }
+        #servizi { padding: 7rem 0 5.5rem; background: linear-gradient(180deg, #fdfbf5 0%, #faf7ef 100%); }
 
         .card-servizio {
             position: relative;
@@ -415,7 +446,7 @@ $foto_mosaico_url = array_map(function ($percorso) {
             content: "";
             position: absolute;
             inset: 0;
-            background: url('assets/img/card-servizio-bg.jpg') center/cover no-repeat;
+            background: var(--card-foto, url('assets/img/card-servizio-bg.jpg')) center/cover no-repeat;
             opacity: .09;
             transform: scale(1.01);
             transition: opacity .45s ease, transform .45s ease;
@@ -580,10 +611,96 @@ $foto_mosaico_url = array_map(function ($percorso) {
 
         .lista-forza li i { color: var(--oro-scuro); font-size: 1.25rem; }
 
+        /* ================= COME LAVORIAMO ================= */
+        #come-lavoriamo { padding: 5.5rem 0; background: #faf7ef; position: relative; }
+
+        /* Bordo oro in alto (come le sezioni della homepage) */
+        #come-lavoriamo::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--oro-scuro) 0%, var(--oro) 25%, #e8cc82 50%, var(--oro) 75%, var(--oro-scuro) 100%);
+        }
+
+        /* Percorso in 4 fasi: icone collegate da una linea oro continua (desktop) */
+        .percorso-fasi { position: relative; }
+
+        @media (min-width: 992px) {
+            .percorso-fasi::before {
+                content: "";
+                position: absolute;
+                top: 39px;
+                left: 13%;
+                right: 13%;
+                height: 3px;
+                border-radius: 2px;
+                background: linear-gradient(90deg, #e8cc82, var(--oro) 50%, var(--oro-scuro));
+            }
+        }
+
+        .fase-step { text-align: center; padding: 0 .8rem; }
+
+        .fase-step .icona-fase {
+            position: relative;
+            z-index: 1;
+            width: 78px;
+            height: 78px;
+            margin: 0 auto 1.3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9rem;
+            color: var(--oro-scuro);
+            background: #fff;
+            border: 2px solid #ecdfc0;
+            box-shadow: 0 8px 22px rgba(201, 162, 75, .18);
+            transition: background .3s ease, color .3s ease, transform .3s ease, border-color .3s ease;
+        }
+
+        .fase-step:hover .icona-fase {
+            background: linear-gradient(135deg, var(--oro), var(--oro-scuro));
+            border-color: var(--oro-scuro);
+            color: #fff;
+            transform: rotate(-6deg) scale(1.08);
+        }
+
+        .fase-step h5 {
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            font-size: .98rem;
+            margin-bottom: .55rem;
+        }
+
+        /* Sottolineatura oro sotto il titolo (richiama la title-underline) */
+        .fase-step h5::after {
+            content: "";
+            display: block;
+            width: 42px;
+            height: 3px;
+            margin: .6rem auto 0;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--oro), var(--oro-scuro));
+            transition: width .35s ease;
+        }
+
+        .fase-step:hover h5::after { width: 70px; }
+
+        .fase-step p {
+            font-size: .9rem;
+            margin: 0 auto;
+            max-width: 240px;
+            line-height: 1.7;
+        }
+
         /* ================= REALIZZAZIONI ================= */
         #realizzazioni {
             padding: 5.5rem 0 6.5rem;
-            background: linear-gradient(180deg, #fdf8ec 0%, #ffffff 42%);
+            background: linear-gradient(180deg, #f7f1e2 0%, #faf7ef 46%);
             position: relative;
             overflow: hidden;
         }
@@ -808,6 +925,7 @@ $foto_mosaico_url = array_map(function ($percorso) {
         }
 
         .btn-bianco:hover {
+            background: #fff;
             color: var(--oro-testo);
             transform: translateY(-2px);
             box-shadow: 0 12px 28px rgba(0, 0, 0, .18);
@@ -873,12 +991,9 @@ $foto_mosaico_url = array_map(function ($percorso) {
 
         .card-contatto a:hover { color: var(--oro-testo); }
 
-        /* Cornice oro sfumata attorno alla mappa */
         .cornice-mappa {
-            padding: 9px;
             border-radius: 24px;
-            background: linear-gradient(135deg, #e8cc82 0%, var(--oro) 45%, var(--oro-scuro) 100%);
-            box-shadow: 0 18px 40px rgba(169, 130, 47, .25);
+            box-shadow: 0 18px 40px rgba(46, 59, 66, .18);
         }
 
         .mappa {
@@ -886,7 +1001,7 @@ $foto_mosaico_url = array_map(function ($percorso) {
             border: 0;
             width: 100%;
             height: 340px;
-            border-radius: 16px;
+            border-radius: 24px;
         }
 
         /* ================= FOOTER ================= */
@@ -973,9 +1088,135 @@ $foto_mosaico_url = array_map(function ($percorso) {
 
         .btn-top:hover { transform: translateY(-3px); background: var(--oro-scuro); }
 
+        /* ================= MOBILE: MENU E TABLET ================= */
         @media (max-width: 991.98px) {
-            .hero { min-height: 92vh; }
-            .navbar .nav-link { margin: .2rem 0; }
+            .hero { min-height: 92vh; min-height: 92svh; padding: 7.5rem 0 4.5rem; }
+
+            /* Menu a discesa: pannello comodo, voci grandi da toccare */
+            .navbar-collapse {
+                margin-top: .7rem;
+                padding: .3rem .1rem .9rem;
+                border-top: 1px solid #eee6d4;
+                max-height: calc(100dvh - 84px);
+                overflow-y: auto;
+            }
+
+            .navbar .nav-link {
+                margin: 0;
+                padding: .7rem .3rem;
+                font-size: 1rem;
+            }
+
+            /* Nel menu aperto niente sottolineatura animata: si evidenzia col colore */
+            .navbar .nav-link::after { display: none; }
+
+            .navbar .nav-link.active { color: var(--oro-testo); }
+
+            /* Ombra sotto la barra quando il menu è aperto */
+            .navbar:has(.navbar-collapse.show) { box-shadow: 0 4px 24px rgba(46, 59, 66, .12); }
+
+            /* Sottomenu Servizi: pannello piatto color crema, senza ombre */
+            .menu-servizi {
+                box-shadow: none;
+                margin: .2rem 0 .6rem;
+                background: #fbf8f0;
+            }
+
+            .menu-servizi .dropdown-item { padding: .68rem .9rem; }
+
+            /* Bottone preventivo: a tutta larghezza, comodo per il pollice */
+            .navbar .nav-item .btn-oro {
+                display: block;
+                width: 100%;
+                text-align: center;
+                margin-top: .4rem;
+                padding: .75rem 1rem !important;
+                font-size: .95rem;
+            }
+
+            /* Feedback immediato al tocco */
+            .btn-oro:active, .btn-bianco:active, .link-servizio:active { transform: scale(.97); }
+        }
+
+        /* Su schermi touch la foto di cantiere nelle card resta leggermente
+           più visibile: l'effetto hover del mouse non esiste */
+        @media (hover: none) {
+            .card-servizio::before { opacity: .13; }
+        }
+
+        /* ================= MOBILE: TELEFONI ================= */
+        @media (max-width: 575.98px) {
+            /* Ritmo verticale più compatto: meno vuoto tra le sezioni */
+            #servizi { padding: 3.8rem 0 3.4rem; }
+            #chi-siamo, #come-lavoriamo, #realizzazioni, #contatti { padding: 3.8rem 0; }
+            #preventivo { padding: 3.2rem 0; }
+
+            /* Righe impilate: gutter orizzontale standard e respiro ridotto */
+            .row.g-5 { --bs-gutter-x: 1.5rem; --bs-gutter-y: 2.4rem; }
+
+            .hero h1 { font-size: 2.35rem; }
+            .hero .lead { font-size: 1.05rem; }
+
+            /* CTA a tutta larghezza: più facili da premere */
+            .hero .btn-oro,
+            .hero .btn-outline-scuro,
+            #preventivo .btn-bianco {
+                display: flex;
+                justify-content: center;
+                width: 100%;
+                padding-top: .85rem;
+                padding-bottom: .85rem;
+            }
+
+            /* Card più snelle: il contenuto respira anche su schermi stretti */
+            .card-servizio { padding: 2rem 1.4rem 1.8rem; }
+            .box-logo { padding: 2rem 1.5rem; }
+            .fase-step { padding: 0; }
+            .mappa { height: 300px; }
+
+            footer { padding-top: 3.2rem; }
+            footer a { overflow-wrap: anywhere; }
+            .footer-bottom { margin-top: 2rem; }
+
+            /* Pulsanti flottanti: rispettano le aree sicure di iPhone */
+            .btn-whatsapp {
+                right: max(16px, env(safe-area-inset-right));
+                bottom: max(18px, env(safe-area-inset-bottom));
+            }
+
+            .btn-top {
+                right: max(21px, env(safe-area-inset-right));
+                bottom: 88px;
+            }
+
+            /* Lightbox: chiudi in alto, frecce in basso al centro (zona pollice) */
+            .lightbox img { max-width: 96vw; max-height: 72vh; }
+
+            .lightbox .chiudi { top: max(14px, env(safe-area-inset-top)); right: 14px; }
+
+            .lightbox .contatore {
+                top: max(26px, env(safe-area-inset-top));
+                bottom: auto;
+                left: 20px;
+                transform: none;
+            }
+
+            .lightbox .precedente,
+            .lightbox .successiva {
+                top: auto;
+                bottom: max(20px, env(safe-area-inset-bottom));
+                transform: none;
+                width: 54px;
+                height: 54px;
+                background: rgba(255, 255, 255, .16);
+            }
+
+            .lightbox .precedente { left: calc(50% - 66px); }
+
+            .lightbox .successiva { right: calc(50% - 66px); }
+
+            .lightbox .precedente:hover,
+            .lightbox .successiva:hover { transform: scale(1.06); }
         }
     </style>
 </head>
@@ -1010,18 +1251,18 @@ $foto_mosaico_url = array_map(function ($percorso) {
                             <li><hr class="dropdown-divider"></li>
                             <?php foreach ($servizi as $servizio): ?>
                             <li>
-                                <a class="dropdown-item" href="#servizio-<?php echo $servizio['slug']; ?>">
+                                <a class="dropdown-item" href="<?php echo $servizio['url'] ?? '#servizio-' . $servizio['slug']; ?>">
                                     <i class="bi <?php echo $servizio['icona']; ?>"></i> <?php echo $servizio['titolo']; ?>
                                 </a>
                             </li>
                             <?php endforeach; ?>
                         </ul>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="#chi-siamo">Chi Siamo</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#realizzazioni">Realizzazioni</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#contatti">Contatti</a></li>
+                    <li class="nav-item"><a class="nav-link" href="chi-siamo.php">Chi Siamo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="realizzazioni.php">Realizzazioni</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contatti.php">Contatti</a></li>
                     <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
-                        <a class="btn btn-oro btn-sm px-3 py-2" href="#preventivo">
+                        <a class="btn btn-oro btn-sm px-3 py-2" href="preventivo.php">
                             <i class="bi bi-envelope-paper me-1"></i> Richiedi Preventivo
                         </a>
                     </li>
@@ -1088,11 +1329,11 @@ $foto_mosaico_url = array_map(function ($percorso) {
             <div class="row g-4">
                 <?php foreach ($servizi as $i => $servizio): ?>
                 <div class="col-md-6 col-lg-4 reveal" id="servizio-<?php echo $servizio['slug']; ?>" style="transition-delay: <?php echo ($i % 3) * 0.12; ?>s">
-                    <div class="card-servizio">
+                    <div class="card-servizio"<?php if (!empty($servizio['foto'])): ?> style="--card-foto: url('<?php echo $servizio['foto']; ?>')"<?php endif; ?>>
                         <div class="icona-servizio"><i class="bi <?php echo $servizio['icona']; ?>"></i></div>
                         <h5><?php echo $servizio['titolo']; ?></h5>
                         <p><?php echo $servizio['descrizione']; ?></p>
-                        <a href="#preventivo" class="link-servizio" aria-label="Scopri di più su <?php echo $servizio['titolo']; ?>">Scopri di più <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                        <a href="<?php echo $servizio['url'] ?? '#preventivo'; ?>" class="link-servizio" aria-label="Scopri di più su <?php echo $servizio['titolo']; ?>">Scopri di più <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -1135,6 +1376,31 @@ $foto_mosaico_url = array_map(function ($percorso) {
         </div>
     </section>
 
+    <!-- ================= COME LAVORIAMO ================= -->
+    <section id="come-lavoriamo">
+        <div class="container">
+            <div class="text-center mb-5 reveal">
+                <span class="hero-badge"><i class="bi bi-diagram-3"></i> Il nostro metodo</span>
+                <h2 class="section-title mt-3">Come Lavoriamo</h2>
+                <div class="title-underline"></div>
+                <p class="mt-3 mx-auto" style="max-width: 640px;">
+                    Un percorso chiaro in quattro fasi, dal primo contatto alla consegna finale.
+                </p>
+            </div>
+            <div class="row g-5 percorso-fasi">
+                <?php foreach ($fasi_lavoro as $i => $fase): ?>
+                <div class="col-md-6 col-lg-3 reveal" style="transition-delay: <?php echo $i * 0.12; ?>s">
+                    <div class="fase-step">
+                        <div class="icona-fase"><i class="bi <?php echo $fase['icona']; ?>"></i></div>
+                        <h5><?php echo $fase['titolo']; ?></h5>
+                        <p><?php echo $fase['testo']; ?></p>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+
     <!-- ================= CTA PREVENTIVO ================= -->
     <section id="preventivo">
         <div class="container position-relative">
@@ -1147,8 +1413,11 @@ $foto_mosaico_url = array_map(function ($percorso) {
                     </p>
                 </div>
                 <div class="col-lg-4 text-lg-end reveal" style="transition-delay:.15s">
-                    <a href="tel:<?php echo $phone1_raw; ?>" class="btn btn-bianco">
+                    <a href="tel:<?php echo $phone1_raw; ?>" class="btn btn-bianco mb-3 mb-lg-0 me-lg-2">
                         <i class="bi bi-telephone-outbound me-2"></i>Chiama Ora
+                    </a>
+                    <a href="preventivo.php" class="btn btn-bianco">
+                        <i class="bi bi-envelope-paper me-2"></i>Richiedi Preventivo
                     </a>
                 </div>
             </div>
@@ -1184,6 +1453,11 @@ $foto_mosaico_url = array_map(function ($percorso) {
             <?php else: ?>
             <p class="text-center text-muted reveal">Le foto dei nostri lavori saranno disponibili a breve.</p>
             <?php endif; ?>
+            <div class="text-center mt-5 reveal">
+                <a href="realizzazioni.php" class="btn btn-oro">
+                    <i class="bi bi-images me-2"></i>Vedi tutte le realizzazioni
+                </a>
+            </div>
         </div>
     </section>
 
@@ -1250,12 +1524,13 @@ $foto_mosaico_url = array_map(function ($percorso) {
                     <ul class="list-unstyled d-grid gap-2 mb-0">
                         <li><a href="#home"><i class="bi bi-chevron-right small"></i> Home</a></li>
                         <li><a href="#servizi"><i class="bi bi-chevron-right small"></i> Servizi</a></li>
-                        <li><a href="#chi-siamo"><i class="bi bi-chevron-right small"></i> Chi Siamo</a></li>
-                        <li><a href="#realizzazioni"><i class="bi bi-chevron-right small"></i> Realizzazioni</a></li>
-                        <li><a href="#contatti"><i class="bi bi-chevron-right small"></i> Contatti</a></li>
+                        <li><a href="chi-siamo.php"><i class="bi bi-chevron-right small"></i> Chi Siamo</a></li>
+                        <li><a href="realizzazioni.php"><i class="bi bi-chevron-right small"></i> Realizzazioni</a></li>
+                        <li><a href="contatti.php"><i class="bi bi-chevron-right small"></i> Contatti</a></li>
+                        <li><a href="preventivo.php"><i class="bi bi-chevron-right small"></i> Richiedi Preventivo</a></li>
                     </ul>
                 </div>
-                <div class="col-6 col-lg-4">
+                <div class="col-12 col-sm-6 col-lg-4">
                     <h6>Contatti</h6>
                     <ul class="list-unstyled d-grid gap-2 mb-0" style="font-size:.9rem;">
                         <li><i class="bi bi-telephone me-2" style="color:var(--oro)"></i><a href="tel:<?php echo $phone1_raw; ?>"><?php echo $phone1; ?></a> — <a href="tel:<?php echo $phone2_raw; ?>"><?php echo $phone2; ?></a></li>
@@ -1423,6 +1698,16 @@ $foto_mosaico_url = array_map(function ($percorso) {
             lightbox.querySelector('.precedente').addEventListener('click', () => mostraFoto(indiceLightbox - 1));
             lightbox.querySelector('.successiva').addEventListener('click', () => mostraFoto(indiceLightbox + 1));
             lightbox.addEventListener('click', (e) => { if (e.target === lightbox) chiudiLightbox(); });
+
+            // Swipe sinistra/destra per cambiare foto (telefoni)
+            let toccoX = null;
+            lightbox.addEventListener('touchstart', (e) => { toccoX = e.changedTouches[0].clientX; }, { passive: true });
+            lightbox.addEventListener('touchend', (e) => {
+                if (toccoX === null) return;
+                const delta = e.changedTouches[0].clientX - toccoX;
+                toccoX = null;
+                if (Math.abs(delta) > 45) mostraFoto(indiceLightbox + (delta < 0 ? 1 : -1));
+            }, { passive: true });
 
             document.addEventListener('keydown', (e) => {
                 if (!lightbox.classList.contains('aperta')) return;
