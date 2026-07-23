@@ -437,7 +437,7 @@ $json_ld = [
         .hero-servizio .hero-bg {
             position: absolute;
             inset: 0;
-            background: url('../assets/img/hero.jpg') center center / cover no-repeat;
+            background: url('../assets/img/colore.jpg') center center / cover no-repeat;
             animation: kenburns 22s ease-in-out infinite alternate;
             will-change: transform;
         }
