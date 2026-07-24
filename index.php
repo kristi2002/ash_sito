@@ -97,6 +97,20 @@ sort($foto_mosaico);
 $foto_mosaico_url = array_map(function ($percorso) {
     return implode('/', array_map('rawurlencode', explode('/', $percorso)));
 }, $foto_mosaico);
+
+// Loghi dei partner / fornitori mostrati nella sezione "Partner".
+// Per aggiungere un partner basta caricare il suo logo (png, svg, jpg o webp)
+// nella cartella "assets/img/partner". Consiglio: logo su sfondo trasparente (png/svg).
+// La sezione appare da sola quando c'è almeno un logo, e sparisce se la cartella è vuota.
+$partner_loghi = [];
+foreach (['png', 'svg', 'jpg', 'jpeg', 'webp'] as $estensione) {
+    $trovati = glob('assets/img/partner/*.' . $estensione);
+    if ($trovati) {
+        $partner_loghi = array_merge($partner_loghi, $trovati);
+    }
+}
+$partner_loghi = array_values(array_unique($partner_loghi));
+sort($partner_loghi);
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -325,20 +339,12 @@ $foto_mosaico_url = array_map(function ($percorso) {
             padding: 8.5rem 0 3rem;
         }
 
-        /* Sfondo hero: video con fallback immagine (zoom lento se il video non parte) */
+        /* Sfondo hero: solo video (colore scuro di base per evitare flash bianco al caricamento) */
         .hero-bg {
             position: absolute;
             inset: 0;
             overflow: hidden;
-        }
-
-        .hero-bg::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: url('assets/img/hero.jpg') center center / cover no-repeat;
-            animation: kenburns 22s ease-in-out infinite alternate;
-            will-change: transform;
+            background: #181e22;
         }
 
         .hero-video {
@@ -347,11 +353,6 @@ $foto_mosaico_url = array_map(function ($percorso) {
             width: 100%;
             height: 100%;
             object-fit: cover;
-        }
-
-        @keyframes kenburns {
-            from { transform: scale(1); }
-            to   { transform: scale(1.1) translate(-1.5%, -1%); }
         }
 
         /* Overlay scuro + velatura oro per leggibilità del testo */
@@ -763,6 +764,80 @@ $foto_mosaico_url = array_map(function ($percorso) {
             margin: 0 auto;
             max-width: 240px;
             line-height: 1.7;
+        }
+
+        /* ================= PARTNER TECNICI ================= */
+        #partner {
+            padding: 4.5rem 0;
+            background: #fff;
+            position: relative;
+        }
+
+        /* Bordo oro in alto: coerente con le altre sezioni chiare */
+        #partner::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--oro-scuro) 0%, var(--oro) 25%, #e8cc82 50%, var(--oro) 75%, var(--oro-scuro) 100%);
+        }
+
+        /* Marquee: scorrimento infinito dei loghi.
+           I bordi sfumano (mask) e lo scorrimento si ferma al passaggio del mouse. */
+        .partner-marquee {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%);
+                    mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%);
+        }
+
+        .partner-track {
+            display: flex;
+            width: max-content;
+            animation: partner-scroll 45s linear infinite;
+        }
+
+        .partner-marquee:hover .partner-track { animation-play-state: paused; }
+
+        .partner-group {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .partner-logo {
+            height: 58px;
+            width: auto;
+            max-width: 180px;
+            margin: 0 2.6rem;
+            object-fit: contain;
+            filter: grayscale(100%);
+            opacity: .62;
+            transition: filter .35s ease, opacity .35s ease, transform .35s ease;
+        }
+
+        .partner-logo:hover {
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: translateY(-3px);
+        }
+
+        @keyframes partner-scroll {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+        }
+
+        /* Accessibilità: niente animazione se l'utente preferisce meno movimento */
+        @media (prefers-reduced-motion: reduce) {
+            .partner-track { animation: none; flex-wrap: wrap; justify-content: center; }
+        }
+
+        @media (max-width: 575.98px) {
+            #partner { padding: 3.2rem 0; }
+            .partner-logo { height: 44px; max-width: 140px; margin: 0 1.7rem; }
         }
 
         /* ================= REALIZZAZIONI ================= */
@@ -1344,7 +1419,8 @@ $foto_mosaico_url = array_map(function ($percorso) {
     <!-- ================= HERO ================= -->
     <header class="hero" id="home">
         <div class="hero-bg" aria-hidden="true">
-            <video class="hero-video" autoplay muted loop playsinline preload="metadata" poster="assets/img/hero.jpg">
+            <video class="hero-video" autoplay muted loop playsinline preload="auto" poster="assets/img/hero-poster.jpg">
+                <source src="assets/video/hero.webm" type="video/webm">
                 <source src="assets/video/hero.mp4" type="video/mp4">
             </video>
         </div>
@@ -1453,6 +1529,46 @@ $foto_mosaico_url = array_map(function ($percorso) {
             </div>
         </div>
     </section>
+
+    <!-- ================= PARTNER TECNICI ================= -->
+    <?php if (!empty($partner_loghi)): ?>
+    <?php
+        // Per un marquee fluido servono abbastanza loghi da riempire la riga:
+        // ripetiamo l'elenco fino ad avere una "metà" sufficientemente larga.
+        $partner_track = $partner_loghi;
+        while (count($partner_track) < 8) {
+            $partner_track = array_merge($partner_track, $partner_loghi);
+        }
+    ?>
+    <section id="partner">
+        <div class="container">
+            <div class="text-center mb-5 reveal">
+                <span class="hero-badge"><i class="bi bi-patch-check"></i> Qualità garantita</span>
+                <h2 class="section-title mt-3">I Nostri Partner Tecnici</h2>
+                <div class="title-underline"></div>
+                <p class="mt-3 mx-auto" style="max-width: 640px;">
+                    Utilizziamo esclusivamente materiali dei migliori marchi del settore:
+                    una scelta che si traduce in finiture durature, sicure e a regola d'arte.
+                </p>
+            </div>
+        </div>
+        <div class="partner-marquee reveal" aria-label="Marchi e materiali utilizzati da A.S.H.">
+            <div class="partner-track">
+                <?php for ($copia = 0; $copia < 2; $copia++): ?>
+                <div class="partner-group"<?php echo $copia === 1 ? ' aria-hidden="true"' : ''; ?>>
+                    <?php foreach ($partner_track as $logo): ?>
+                    <?php
+                        $logo_url = implode('/', array_map('rawurlencode', explode('/', $logo)));
+                        $logo_nome = ucwords(str_replace(['-', '_'], ' ', pathinfo($logo, PATHINFO_FILENAME)));
+                    ?>
+                    <img class="partner-logo" src="<?php echo $logo_url; ?>" alt="<?php echo htmlspecialchars($logo_nome); ?>" loading="lazy">
+                    <?php endforeach; ?>
+                </div>
+                <?php endfor; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
 
     <!-- ================= COME LAVORIAMO ================= -->
     <section id="come-lavoriamo">

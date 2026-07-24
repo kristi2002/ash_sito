@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" role="img" aria-label="Partner Due">
+  <circle cx="24" cy="30" r="17" fill="none" stroke="#2e3b42" stroke-width="4"/>
+  <circle cx="24" cy="30" r="7" fill="#c9a24b"/>
+  <text x="50" y="38" font-family="Montserrat, Arial, sans-serif" font-size="19" font-weight="800" fill="#2e3b42" letter-spacing="1">PARTNER<tspan fill="#a9822f"> DUE</tspan></text>
+</svg>

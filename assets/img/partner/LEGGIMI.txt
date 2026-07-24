@@ -1,0 +1,27 @@
+LOGHI PARTNER / FORNITORI
+=========================
+
+Metti qui i loghi dei marchi/fornitori che vuoi mostrare nella homepage,
+nella sezione "I Nostri Partner Tecnici" (compare tra "Chi Siamo" e
+"Come Lavoriamo", con scorrimento automatico dei loghi).
+
+COME AGGIUNGERE UN PARTNER
+- Trascina il file del logo in questa cartella (assets/img/partner).
+- Formati accettati: .png  .svg  .jpg  .jpeg  .webp
+- Consigliato: PNG o SVG con sfondo trasparente.
+- Altezza consigliata: circa 120-200 px (viene ridimensionato in automatico).
+
+NOME DEL FILE = TESTO ALTERNATIVO
+Il nome del file diventa la descrizione del logo (utile per Google e per
+l'accessibilità). Esempi:
+    knauf.png            ->  "Knauf"
+    saint-gobain.svg     ->  "Saint Gobain"
+    san-marco.png        ->  "San Marco"
+
+NOTE
+- I loghi vengono mostrati in ordine alfabetico di nome file.
+- La sezione appare da sola quando c'e almeno un logo, e sparisce se la
+  cartella e vuota.
+- Per togliere un partner basta cancellare il suo file da questa cartella.
+
+Questo file (LEGGIMI.txt) non viene mostrato sul sito: puoi lasciarlo qui.
