@@ -800,8 +800,6 @@ sort($partner_loghi);
             animation: partner-scroll 45s linear infinite;
         }
 
-        .partner-marquee:hover .partner-track { animation-play-state: paused; }
-
         .partner-group {
             display: flex;
             align-items: center;
@@ -816,13 +814,8 @@ sort($partner_loghi);
             object-fit: contain;
             filter: grayscale(100%);
             opacity: .62;
-            transition: filter .35s ease, opacity .35s ease, transform .35s ease;
-        }
-
-        .partner-logo:hover {
-            filter: grayscale(0%);
-            opacity: 1;
-            transform: translateY(-3px);
+            pointer-events: none;
+            user-select: none;
         }
 
         @keyframes partner-scroll {
