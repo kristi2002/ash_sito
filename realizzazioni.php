@@ -745,6 +745,35 @@ $json_ld = [
             padding: 5px;
         }
 
+        .footer-social {
+            margin-top: 1.6rem;
+        }
+
+        .footer-social-icons {
+            display: flex;
+            gap: .6rem;
+        }
+
+        .footer-social-icons a {
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, .18);
+            border-radius: 50%;
+            color: #cfd6da;
+            font-size: 1.15rem;
+            transition: all .25s ease;
+        }
+
+        .footer-social-icons a:hover {
+            color: var(--scuro);
+            background: var(--oro);
+            border-color: var(--oro);
+            transform: translateY(-3px);
+        }
+
         .footer-bottom {
             border-top: 1px solid rgba(255, 255, 255, .12);
             margin-top: 3rem;
@@ -1065,6 +1094,16 @@ $json_ld = [
                     <p class="mb-0" style="max-width: 380px; font-size:.9rem;">
                         Specialisti in finiture edili: <?php echo strtolower($tagline); ?>.
                     </p>
+                    <div class="footer-social">
+                        <h6>Seguici</h6>
+                        <div class="footer-social-icons">
+                            <!-- Instagram: sostituisci il # con l'URL del profilo -->
+                            <a href="#" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram"><i class="bi bi-instagram"></i></a>
+                            <!-- TikTok: sostituisci il # con l'URL del profilo -->
+                            <a href="#" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok"><i class="bi bi-tiktok"></i></a>
+                            <a href="https://wa.me/393296447797" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-6 col-lg-3">
                     <h6>Link Rapidi</h6>
